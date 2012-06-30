@@ -15,7 +15,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
-//NEED TO FIX SCROLLING DEVIATIONS
+//NEED TO FIX CREATURE MOVEMENT DEVIATIONS
 
 
 
@@ -59,7 +59,10 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	String sBuffer="Hello World";							//General String Buffer
 	Random rand = new Random();								//Generates Randomizing Object
 	ButtonHolder bhButtons =new ButtonHolder();				//Holds all the buttons
-	
+	boolean bMoveTest=true;
+	ArrayList<Creature> creaturelistBuffer= new ArrayList<Creature>();
+	Creature cBuffer=new Creature(0,0,0,0);
+	int iSwitch=0;											//Controls the switchboard 0=draw matrix
 	
 	
 	public static void main(String[] args) {
@@ -96,7 +99,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		while(true)
 		{
 			
-			main.drawMatrix();		
+				main.switchBoard(main);
 			try {
 				Thread.sleep(40);
 			} catch (InterruptedException e) {
@@ -105,14 +108,41 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		}
 		
 	}
+	public void switchBoard(GameMain main)
+	{	
+		switch(iSwitch)
+		{
+		case 0:
+		main.drawMatrix();
+		break;
+		case 1:
+		main.drawItems();
+		break;
+		}
+	}
+	public void drawItems()
+	{
+		Graphics g = getBufferStrategy().getDrawGraphics();
+		g.setFont(new Font("New Courier",Font.BOLD,20));
+		sBuffer="Item Page";
+		g.drawString(sBuffer, 600,100);
+		g.dispose();
+		getBufferStrategy().show();
+	}
 	public void drawMatrix()
 	{
 		Graphics g = getBufferStrategy().getDrawGraphics();
 		g.setFont(new Font("New Courier",Font.BOLD,20));
 		
+		for(int a=0;a<map.size();a++)
+		{
+			map.get(a).moveCreatures();
+		}
 		//System.out.println(map.size());
 				
 		allTileCheckUp();
+		correctSuperTile();
+		//correctCreatures();
 		
 		for(int a=-11;a<iFrameXSize-9;a++)
 		{
@@ -147,24 +177,30 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 						iDrawST=map.get(iDrawST).getiBottom();
 					}
 					
-					if(iDrawX<0||iDrawX>99||iDrawY<0||iDrawY>99)
+					/*if(iDrawX<0||iDrawX>99||iDrawY<0||iDrawY>99)
 					{
 							System.out.println(iDrawX+" , "+iDrawY + " , " + iDrawST);
-					}
+					}*/
 					
 					drawTile = map.get(iDrawST).getTile(iDrawX,iDrawY);
 					g.drawImage(tile, (a+10)*50-xEdgeAdjust,(b+10)*50-yEdgeAdjust,(a+10)*50+50-xEdgeAdjust,(b+10)*50+50-yEdgeAdjust,drawTile.getX(),drawTile.getY(),drawTile.getX()+49,drawTile.getY()+49, null);
 					}
 		}
 		
-		g.clearRect(1000, 0, 300, 750);
-		
-		g.drawString(sBuffer, iFramePixelsX,50);
-		
-		bhButtons.drawButtons(g);
-		
 		doEvent();
+		map.get(iCurrentSuperTile).compareCreatures();
 		drawCharacters(g);
+		g.clearRect(1000, 0, 300, 750);
+		sBuffer=(hero.getTileX()+" , "+hero.getTileY()+" Frame: "+FrameX+" , "+FrameY);
+		g.drawString(sBuffer, iFramePixelsX,50);
+		sBuffer=(hero.getX()+ " , "+hero.getY()+" ("+hero.getiXinSuperTile()+" , "+hero.getiYinSuperTile()+")");
+		g.drawString(sBuffer, iFramePixelsX, 100);
+		sBuffer=""+iCurrentSuperTile+"";
+		g.drawString(sBuffer, iFramePixelsX,150);
+		
+		//bhButtons.drawButtons(g);
+		
+		
 		
 		
 		g.dispose();
@@ -172,19 +208,117 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	}
 	public void drawCharacters(Graphics g)
 	{
-		g.drawImage(tile, hero.getX(),hero.getY(),hero.getX()+50,hero.getY()+50,50,0,100,50, null);
+		
 		g.drawImage(tile, 1200,300,1249,349,0,50,49,99,null);
-		map.get(iCurrentSuperTile).drawCreatures(g, tile, FrameX, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);//needs EdgeAdjusts as well
+		
+		map.get(iCurrentSuperTile).drawCreatures(g, tile, FrameX, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+		drawsideCharacters(g);
+		
+		g.drawImage(tile, hero.getX(),hero.getY(),hero.getX()+50,hero.getY()+50,50,0,100,50, null);
 	}
+	
+	//Below is a work in progress
+	public void drawsideCharacters(Graphics g)
+	{
+		if(FrameX<10)
+		{
+			iBuffer=map.get(iCurrentSuperTile).getiLeft();
+			
+			if(iBuffer>0)
+			{
+				map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+			}
+		}
+		if(FrameX>89)
+		{
+			iBuffer=map.get(iCurrentSuperTile).getiRight();
+			
+			if(iBuffer>0)
+			{
+				map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+			}
+		}
+		
+		
+	}
+	
+	//This is a work in progress as well
+	public void correctCreatures()
+	{
+		for(int a=0;a<map.size();a++)
+		{
+			creaturelistBuffer.clear();
+			creaturelistBuffer=map.get(a).creaturesCorrect();
+			
+			for(int b=0;b<creaturelistBuffer.size();b++)
+			{
+				cBuffer=creaturelistBuffer.get(b);
+									
+				switch(cBuffer.getiMoveSuperTile())
+				{
+				case 1:
+					iBuffer=map.get(a).getiLeft();
+					if(iBuffer>0)
+					{	
+						cBuffer.setiMoveSuperTile(0);
+						map.get(iBuffer).addCreature(cBuffer);
+						System.out.println("A Creature was added to: "+iBuffer+" From: "+a);
+						
+					}
+					break;
+				case 2:
+					iBuffer=map.get(a).getiRight();
+					if(iBuffer>0)
+					{
+						cBuffer.setiMoveSuperTile(0);
+						map.get(iBuffer).addCreature(cBuffer);
+						System.out.println("A Creature was added to: "+iBuffer+" From: "+a);
+					}
+					break;
+				case 3:
+					iBuffer=map.get(a).getiTop();
+					if(iBuffer>0)
+					{
+						cBuffer.setiMoveSuperTile(0);
+						map.get(iBuffer).addCreature(cBuffer);
+						System.out.println("A Creature was added to: "+iBuffer+" From: "+a);
+					}
+					break;
+				case 4:
+					iBuffer=map.get(a).getiBottom();
+					if(iBuffer>0)
+					{
+						cBuffer.setiMoveSuperTile(0);
+						map.get(iBuffer).addCreature(cBuffer);
+						System.out.println("A Creature was added to: "+iBuffer+" From: "+a);
+					}
+					break;
+				}
+			}
+			
+		}
+	}
+	
 	public void doEvent()
 	{
+		for(int a=0;a<map.size();a++)
+		{
 		iBuffer=rand.nextInt(100);
 		
-		if(iBuffer%10==0)
+		if(iBuffer%5==0)
 		{	
-			iBuffer=rand.nextInt(99);
-			iBuffer2=rand.nextInt(99);
-			map.get(iCurrentSuperTile).addCreature(iBuffer, iBuffer2,1);
+			iBuffer=rand.nextInt(100);
+			iBuffer2=rand.nextInt(100);
+			map.get(a).addCreature(iBuffer, iBuffer2,1);
+		}
+		
+		if(iBuffer%20==0)
+		{
+			iBuffer=rand.nextInt(100);
+			iBuffer2=rand.nextInt(100);
+			map.get(a).addCreature(iBuffer,iBuffer2,2);
+			//System.out.println("A fox was made at "+iBuffer+" , "+iBuffer2);
+		}
 		}
 	}
 	public void allTileCheckUp()
@@ -356,10 +490,13 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		for(int a=0;a<iSuperTileCount;a++)
 		{
 			stBuffer= map.get(a);
+			
+			
 			if(!(stBuffer.isbPatched())) 	//If Tile Patch is Not Complete, Checks to See if it Is
 			{
 				stBuffer.checkPatched(); 	//Checks to see if SuperTile is Fully Patched Together
 			}
+			
 			if(stBuffer.isbPatched())		//If Tile Patch is Complete, goes to next SuperTile to be patched
 			{
 				a++;
@@ -397,7 +534,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiBLCorner()<0)
 									{
 										map.get(a).setiBLCorner(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South-West");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South-West");
 									}
 									break;
 								}
@@ -406,7 +543,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiLeft()<0)
 									{
 										map.get(a).setiLeft(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the West");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the West");
 									}
 									break;
 								}
@@ -415,7 +552,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiTLCorner()<0)
 									{
 										map.get(a).setiTLCorner(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North-West");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North-West");
 									}
 									break;
 								}
@@ -439,7 +576,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiBottom()<0)
 									{
 										map.get(a).setiBottom(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South");
 									}
 									break;
 								}
@@ -448,7 +585,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiTop()<0)
 									{
 										map.get(a).setiTop(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North");
 									}
 									break;
 								}
@@ -470,7 +607,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiBRCorner()<0)
 									{
 										map.get(a).setiBRCorner(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South-East");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the South-East");
 									}
 									break;
 								}
@@ -479,7 +616,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 									if(stBuffer.getiRight()<0)
 									{
 										map.get(a).setiRight(b);
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the East");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the East");
 									}
 									break;
 								}
@@ -487,7 +624,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 								{
 									if(stBuffer.getiTRCorner()<0)
 									{
-										System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North-East");
+										//System.out.println("SuperTile "+a+" has patched SuperTile "+b+" to the North-East");
 										map.get(a).setiTRCorner(b);
 									}
 									break;
@@ -525,27 +662,13 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 				}
 		}
 	}
-	//PATCHWORK MECH:
-				//CHECK ONLY WHEN NEW SUPERTILE IS ADDED
-				//HAVE A WAY TO EXCLUDE FULLY PATCHED TILES (SURROUNDED ON 8 SIDES)
-				//COMPARES ITSELF WITH NEARBY TILES TO SEE ITS RELATION TO THEIR CONNECTED TILES
-	
-	@Override
-	
-	public void keyPressed(KeyEvent k) {
-		
-		//System.out.println(k);
-		//System.out.println("In Tile/Adjust X: "+ hero.getinTilePosX()+ " / "+xEdgeAdjust+"In Tile/Adjust Y: "+hero.getinTilePosY()+ " / "+yEdgeAdjust);
-		//System.out.println("Hero Tile/Frame Tile: " + hero.getTileX()+ "/ "+ FrameX+ "Hero TIle/Frame Tile: "+ hero.getTileY()+ " / "+ FrameY);
-		//rawX=(hero.getTileX()-FrameX)*50+hero.getinTilePosX()-xEdgeAdjust/2;
-		//rawY=(hero.getTileY()-FrameY)*50+hero.getinTilePosY()+yEdgeAdjust/2;
-		//System.out.println("Raw Position: "+ rawX+ " , "+rawY);
-		
+	public void moveWorking(KeyEvent k)
+	{
 		switch(k.getKeyCode())
 		{
 		case KeyEvent.VK_LEFT:
 			
-						
+			
 			rEdge=false;
 			
 			
@@ -723,11 +846,179 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 			break;
 		
 		}
+	}
+	
+	//Need to add switching to new SuperTiles and reseting "hero" frames
+	
+	public void testMove(KeyEvent k)
+	{
+		switch(k.getKeyCode())
+		{
+		case KeyEvent.VK_LEFT:		
+			hero.addiXinSuperTile(-iSpeed);
+			edgeDetect();
+			if(lEdge)
+			{	
+				//hero.addiXinSuperTile(iSpeed);
+				xEdgeAdjust-=iSpeed;
+			}
+			correctFrame();
+			break;
+		case KeyEvent.VK_RIGHT:
+			hero.addiXinSuperTile(iSpeed);
+			edgeDetect();
+			if(rEdge)
+			{
+				//hero.addiXinSuperTile(-iSpeed);
+				xEdgeAdjust+=iSpeed;
+			}
+			correctFrame();
+			break;
+		case KeyEvent.VK_UP:
+			hero.addiYinSuperTile(-iSpeed);
+			edgeDetect();
+			if(tEdge)
+			{
+				//hero.addiYinSuperTile(iSpeed);
+				yEdgeAdjust-=iSpeed;
+			}
+			correctFrame();
+			break;
+		case KeyEvent.VK_DOWN:
+			hero.addiYinSuperTile(iSpeed);
+			edgeDetect();
+			if(bEdge)
+			{
+				//hero.addiYinSuperTile(-iSpeed);
+				yEdgeAdjust+=iSpeed;
+			}
+			correctFrame();
+			break;
+		}
+		hero.assessPosition(FrameX, FrameY,xEdgeAdjust,yEdgeAdjust);
+	}
+	
+	public void edgeDetect()
+	{
+		if(hero.getX()<150)
+		{
+			lEdge=true;
+		}else
+		{
+			lEdge=false;
+		}
+		
+		if(hero.getX()>850)
+		{
+			rEdge=true;
+		}else
+		{
+			rEdge=false;
+		}
+		if(hero.getY()<150)
+		{
+			tEdge=true;
+		}else
+		{
+			tEdge=false;
+		}
+		if(hero.getY()>600)
+		{
+			bEdge=true;
+		}else
+		{
+			bEdge=false;
+		}
+		
+	}
+	
+	public void correctFrame()
+	{
+		if(xEdgeAdjust<-50)
+		{
+			FrameX--;
+			xEdgeAdjust+=50;
+		}
+		if(xEdgeAdjust>50)
+		{
+			FrameX++;
+			xEdgeAdjust-=50;
+		}
+		if(yEdgeAdjust<-50)
+		{
+			FrameY--;
+			yEdgeAdjust+=50;
+		}
+		if(yEdgeAdjust>50)
+		{
+			FrameY++;
+			yEdgeAdjust-=50;
+		}
+	}
+	public void correctSuperTile()
+	{
+		if(hero.getiXinSuperTile()<0)
+		{
+			iCurrentSuperTile=map.get(iCurrentSuperTile).getiLeft();
+			FrameX+=100;
+			hero.addiXinSuperTile(5000);
+		}
+		if(hero.getiXinSuperTile()>5000)
+		{
+			iCurrentSuperTile=map.get(iCurrentSuperTile).getiRight();
+			FrameX-=100;
+			hero.addiXinSuperTile(-5000);
+		}
+		if(hero.getiYinSuperTile()<0)
+		{
+			iCurrentSuperTile=map.get(iCurrentSuperTile).getiTop();
+			FrameY+=100;
+			hero.addiYinSuperTile(5000);
+		}
+		if(hero.getiYinSuperTile()>5000)
+		{
+			iCurrentSuperTile=map.get(iCurrentSuperTile).getiBottom();
+			FrameY-=100;
+			hero.addiYinSuperTile(-5000);
+		}
+	}
+	//PATCHWORK MECH:
+				//CHECK ONLY WHEN NEW SUPERTILE IS ADDED
+				//HAVE A WAY TO EXCLUDE FULLY PATCHED TILES (SURROUNDED ON 8 SIDES)
+				//COMPARES ITSELF WITH NEARBY TILES TO SEE ITS RELATION TO THEIR CONNECTED TILES
+	
+	@Override
+	
+	public void keyPressed(KeyEvent k) {
+		
+		
+		if(!bMoveTest)
+		{
+			moveWorking(k); //Does the bugged out movement
+		}
+		if(bMoveTest)
+		{
+			testMove(k);	//Does new code
+		}
+		
+		
 		
 				
 	}
 	@Override
-	public void keyReleased(KeyEvent arg0) {
+	public void keyReleased(KeyEvent k) {
+		switch(k.getKeyChar())
+		{
+		case 'i':
+			if(iSwitch==1)
+			{
+				iSwitch=0;
+			}else
+			{
+				iSwitch=1;
+			}
+			break;
+		}
 	}
 	@Override
 	public void keyTyped(KeyEvent arg0) {

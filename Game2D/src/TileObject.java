@@ -11,6 +11,7 @@ public class TileObject {
 	{
 		iX=x;
 		iY=y;
+		iSuperTile=ST;
 	}
 	
 	
