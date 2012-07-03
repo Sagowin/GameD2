@@ -23,6 +23,7 @@ public class Creature extends TileObject{
 	int iMoveDir=-1;
 	int iBuffer=0;
 	int iBuffer2=0;
+	String sBuffer="";
 	int iMoveBehavior=-1; //0=meander 1=relaxed 10=hunting
 	int iNaturalMoveBehavior=-1;
 	int iPreyNumber=-1;
@@ -343,10 +344,11 @@ public class Creature extends TileObject{
 		
 	}
 
-	public void trackCreature(int a)
+	public void trackCreature(Graphics g)
 	{
+		sBuffer=("Creature is at position "+getXPosition()+" , "+getYPosition()+" and Tiles: "+iX+" , "+iY);
+		g.drawString(sBuffer, 1000 ,250);
 		
-		System.out.println("Creature: "+ a+ "is a position "+getXPosition()+" , "+getYPosition());
 	}
 	
 

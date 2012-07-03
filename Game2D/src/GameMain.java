@@ -48,8 +48,8 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	int iDrawST=-1;											//Integer Draw Buffer SuperTile Position in "map"
 	int iBuffer=-1; 										//General Integer Buffer
 	int iBuffer2=-1;										//Secondary General Integer Buffer
-	SuperTile stBuffer = new SuperTile(iSuperTileCount);	 //General SuperTile Buffer
-	SuperTile stBufferComp = new SuperTile(iSuperTileCount);	//General SuperTile Comparison Buffer
+	SuperTile stBuffer = new SuperTile();	 //General SuperTile Buffer
+	SuperTile stBufferComp = new SuperTile();	//General SuperTile Comparison Buffer
 	int iPatchX=-1;											//Patch X Test
 	int iPatchY=-1;											//Patch Y Test
 	int iPatchProgressBuffer=0;								//Buffers Patch Progress
@@ -188,15 +188,25 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		}
 		
 		doEvent();
-		map.get(iCurrentSuperTile).compareCreatures();
+		for(int a=0; a<map.size();a++)
+		{
+			map.get(a).compareCreatures();
+		}
+		
 		drawCharacters(g);
 		g.clearRect(1000, 0, 300, 750);
+		
 		sBuffer=(hero.getTileX()+" , "+hero.getTileY()+" Frame: "+FrameX+" , "+FrameY);
 		g.drawString(sBuffer, iFramePixelsX,50);
 		sBuffer=(hero.getX()+ " , "+hero.getY()+" ("+hero.getiXinSuperTile()+" , "+hero.getiYinSuperTile()+")");
 		g.drawString(sBuffer, iFramePixelsX, 100);
 		sBuffer=""+iCurrentSuperTile+"";
 		g.drawString(sBuffer, iFramePixelsX,150);
+		
+		
+		//	g.setFont(new Font("New Courier",Font.BOLD,10));
+		//	map.get(iCurrentSuperTile).getCreature(0).trackCreature(g);
+		
 		
 		//bhButtons.drawButtons(g);
 		
@@ -214,28 +224,97 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		map.get(iCurrentSuperTile).drawCreatures(g, tile, FrameX, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
 		drawsideCharacters(g);
 		
-		g.drawImage(tile, hero.getX(),hero.getY(),hero.getX()+50,hero.getY()+50,50,0,100,50, null);
+		g.drawImage(tile, hero.getX(),hero.getY(),hero.getX()+50,hero.getY()+50,0,100,50,150, null);
 	}
 	
 	//Below is a work in progress
 	public void drawsideCharacters(Graphics g)
 	{
+		//Side by Side and Corners all are drawn
+		
 		if(FrameX<10)
 		{
 			iBuffer=map.get(iCurrentSuperTile).getiLeft();
+			//System.out.println(iBuffer);
 			
-			if(iBuffer>0)
+			if(iBuffer>-1)
 			{
 				map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+				
+				if(FrameY<10)
+				{
+					iBuffer=map.get(iBuffer).getiTop();
+					//System.out.println(iBuffer);
+					
+					if(iBuffer>-1)
+					{
+						map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+					}
+				}
+				if(FrameY>89)
+				{
+					iBuffer=map.get(iBuffer).getiBottom();
+					//System.out.println(iBuffer);
+					
+					if(iBuffer>-1)
+					{
+						map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+					}
+				}
+				
 			}
 		}
 		if(FrameX>89)
 		{
 			iBuffer=map.get(iCurrentSuperTile).getiRight();
+			//System.out.println(iBuffer);
 			
-			if(iBuffer>0)
+			if(iBuffer>-1)
 			{
 				map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+				
+				if(FrameY<10)
+				{
+					iBuffer=map.get(iBuffer).getiTop();
+					//System.out.println(iBuffer);
+					
+					if(iBuffer>-1)
+					{
+						map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+					}
+				}
+				if(FrameY>89)
+				{
+					iBuffer=map.get(iBuffer).getiBottom();
+					//System.out.println(iBuffer);
+					
+					if(iBuffer>-1)
+					{
+						map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+					}
+				}
+			}
+		}
+		
+				
+		if(FrameY<10)
+		{
+			iBuffer=map.get(iCurrentSuperTile).getiTop();
+			//System.out.println(iBuffer);
+			
+			if(iBuffer>-1)
+			{
+				map.get(iBuffer).drawCreatures(g, tile, FrameX, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
+			}
+		}
+		if(FrameY>89)
+		{
+			iBuffer=map.get(iCurrentSuperTile).getiBottom();
+			//System.out.println(iBuffer);
+			
+			if(iBuffer>-1)
+			{
+				map.get(iBuffer).drawCreatures(g, tile, FrameX, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
 			}
 		}
 		

@@ -7,9 +7,14 @@ import java.util.Random;
 public class SuperTile {
 
 	Tile[][] sTile= new Tile[100][100];
+	int[] iArray = new int[20];
 	ArrayList<TileObject> sList= new ArrayList<TileObject>();
 	ArrayList<Creature> cList= new ArrayList<Creature>();
-	
+	int iMax=0;
+	int iZones=0;
+	int iTypeBase=-1;
+	int iCount=1;
+	int iMod=-1;
 	int iIdentity=0;
 	int iLeft=-1;
 	int iRight=-1;
@@ -34,9 +39,12 @@ public class SuperTile {
 	int iY=0;
 	Random rand = new Random();
 	int iBuffer=-1;
+	int iBuffer2=-1;
 	boolean bBuffer=false;
 	ArrayList<Creature> creaturelistBuffer= new ArrayList<Creature>();
+	boolean bGen = false;
 	Creature cBuffer= new Creature(0,0,0,0);
+	
 	
 	public ArrayList<Creature> creaturesCorrect()
 	{
@@ -203,8 +211,20 @@ public class SuperTile {
 	public void setiBottom(int iBottom) {
 		this.iBottom = iBottom;
 	}
+	
+	public Creature getCreature(int a)
+	{
+		return cList.get(a);
+	}
+	
+	public SuperTile()
+	{
+		
+	}
+	
 	public SuperTile(int i)
 	{
+		System.out.println("SuperTile has been made with identity: "+i);
 		iIdentity=i;
 		for(int a=0;a<100;a++)
 		{
@@ -214,15 +234,14 @@ public class SuperTile {
 			}
 		}
 		
-		for(int a=0;a<95;a+=5)
+		if(!bGen)
 		{
-			for(int b=0;b<95;b+=5)
-			{
-				sTile[a][b].setType(1);
-			}
+			genSuperTile();
+			bGen=true;
 		}
-		
-		sTile[50][50].setType(2);
+				
+		//sTile[50][50].setType(2);
+		//makeSuperTile();
 		
 	}
 	public void addTile(int x, int y, int t)
@@ -395,5 +414,89 @@ public class SuperTile {
 			}
 		}
 	}
-	
+
+	public void genSuperTile()
+	{
+		iZones=rand.nextInt(8)+1;
+		int[] iZoneArray= new int[iZones];
+		int iWidth=0;
+		int iHeight=0;
+		int iiX=0;
+		int iiY=0;
+		int iBG=rand.nextInt(3); //sets fill tile type
+		System.out.println("The background tileset is #"+iBG);
+		
+		for(int a=0;a<iZones;a++)
+		{
+			iZoneArray[a]=rand.nextInt(2); //0-> Field 1->Vein
+		}
+		
+		for(int e=0;e<100;e++)
+		{
+			for(int f=0;f<100;f++)
+			{
+				
+					sTile[e][f].setType(iBG);
+					//System.out.println("The background tileset is now #"+iBuffer2);
+			}
+		}
+		
+		for(int b=0;b<iZones;b++)
+		{
+			if(iZoneArray[b]==0)
+			{
+				
+				iBuffer=rand.nextInt(3);
+				iWidth=rand.nextInt(10)+10;
+				iHeight=rand.nextInt(10)+10;
+				iiX=rand.nextInt(100);
+				iiY=rand.nextInt(100);
+				
+				if((iiX+iWidth)>99)
+				{
+					iiX=99-iWidth;
+				}
+				if((iiY+iHeight)>99)
+				{
+					iiY=99-iHeight;
+				}
+				
+				if(iBuffer!=iBG)
+				{
+					for(int c=iiX;c<(iiX+iWidth);c++)
+					{
+						for(int d=iiY;d<(iiY+iHeight);d++)
+						{
+								sTile[c][d].setType(iBuffer);
+								
+						}
+					}
+				
+					System.out.println("A field has been drawn that is type "+iBuffer+ " Against a "+iBG+" background");
+					System.out.println("at " +iiX +" , "+ iiY + "and size: "+iWidth+" by "+iHeight);
+				}
+				
+				
+				
+			}
+		}
+		
+		/*for(int b=0;b<iZones;b++)
+		{
+			if(iZoneArray[b]==1)
+			{
+				iWidth=rand.nextInt(5)+5;
+				iHeight=rand.nextInt(5)+5;
+				iX=rand.nextInt(100-iWidth);
+				iY=rand.nextInt(100-iHeight);
+			}
+			
+		}*/
+		
+		
+		
+		
+		
+		
+	}
 }
