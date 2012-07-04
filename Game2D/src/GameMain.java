@@ -23,10 +23,6 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 
 	Character hero = new Character(500,500);				//Constructs the Central Character
 	int FrameX=50;											//Position of the Center Tile in Frame X (hopefully)
-	int iFrameXSize=20;										//How many tiles in X Direction Rendered per loop
-	int iFramePixelsX= iFrameXSize*50;					//How many pixels in the X Direction of visible map
-	int iFrameYSize=15;										//How many tiles in Y Direction Rendered per loop
-	int iFramePixelsY= iFrameYSize*50;					//How many pixels in the Y Direction of visible map
 	int FrameY=50;											//Position of the Center Tile in Frame Y (hopefully)
 	SuperTile origin = new SuperTile(0);					//Constructs the Original SuperTile
 	ArrayList<SuperTile> map = new ArrayList<SuperTile>();	//Holds all the SuperTiles
@@ -42,10 +38,6 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	int rawX=0;												//Position from Center X in Pixels
 	int rawY=0;												//Position from Center Y in Pixels
 	int iSpeed=10;											//"hero" run speed
-	BufferedImage tile = null;								//Image Buffer
-	int iDrawX=0;											//Integer Draw Buffer X
-	int iDrawY=0;											//Integer Draw Buffer Y
-	int iDrawST=-1;											//Integer Draw Buffer SuperTile Position in "map"
 	int iBuffer=-1; 										//General Integer Buffer
 	int iBuffer2=-1;										//Secondary General Integer Buffer
 	SuperTile stBuffer = new SuperTile();	 //General SuperTile Buffer
@@ -56,50 +48,46 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	boolean bBuffer=false;									//General Boolean Buffer
 	boolean bCheckSuperTileAdd=false;						//If true, will output information about added SuperTiles
 	boolean bCheckSuperTilePatch=false;						//If true, will output information about patch progress
-	String sBuffer="Hello World";							//General String Buffer
 	Random rand = new Random();								//Generates Randomizing Object
-	ButtonHolder bhButtons =new ButtonHolder();				//Holds all the buttons
 	boolean bMoveTest=true;
 	ArrayList<Creature> creaturelistBuffer= new ArrayList<Creature>();
 	Creature cBuffer=new Creature(0,0,0,0);
 	int iSwitch=0;											//Controls the switchboard 0=draw matrix
+	GameInput input;
+	GameDisplay display;
+	
 	
 	
 	public static void main(String[] args) {
 		//Creature Jim = new Creature(30,50);
 		//Jim.printPosition();
 		clientInit(m);
-		}
+	}
 	public GameMain(int x, int y)
 	{	
 		//int i = 9699690;
 		//System.out.println(i);
 		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setVisible(true);
-		setBounds(x,y,1300,750);
-		createBufferStrategy(2);
-		addKeyListener(this);
-		addMouseListener(this);
+		input = new GameInput(this);
+		display = new GameDisplay(this, input);
 		map.add(origin);
 		
 		//System.out.println(rand.nextInt(100));
-		
-		try{
-			tile = ImageIO.read(new File("Resources/Tiles.png"));
-		
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		
 	}
 	public static void clientInit(GameMain main)
 	{		
 		while(true)
 		{
-			
-				main.switchBoard(main);
+				main.allTileCheckUp();
+				main.correctSuperTile();
+				
+				main.doEvent();
+				for(int a=0; a< main.map.size();a++)
+				{
+					main.map.get(a).compareCreatures();
+				}
+				
+				main.display.display();
 			try {
 				Thread.sleep(40);
 			} catch (InterruptedException e) {
@@ -108,218 +96,12 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		}
 		
 	}
-	public void switchBoard(GameMain main)
-	{	
-		switch(iSwitch)
-		{
-		case 0:
-		main.drawMatrix();
-		break;
-		case 1:
-		main.drawItems();
-		break;
-		}
-	}
-	public void drawItems()
-	{
-		Graphics g = getBufferStrategy().getDrawGraphics();
-		g.setFont(new Font("New Courier",Font.BOLD,20));
-		sBuffer="Item Page";
-		g.drawString(sBuffer, 600,100);
-		g.dispose();
-		getBufferStrategy().show();
-	}
-	public void drawMatrix()
-	{
-		Graphics g = getBufferStrategy().getDrawGraphics();
-		g.setFont(new Font("New Courier",Font.BOLD,20));
-		
-		for(int a=0;a<map.size();a++)
-		{
-			map.get(a).moveCreatures();
-		}
-		//System.out.println(map.size());
-				
-		allTileCheckUp();
-		correctSuperTile();
-		//correctCreatures();
-		
-		for(int a=-11;a<iFrameXSize-9;a++)
-		{
-			for(int b=-11;b<iFrameYSize-9;b++)
-			{	
-				Tile drawTile = new Tile();
-				iDrawX=a+FrameX;
-				iDrawY=b+FrameY;
-				iDrawST=iCurrentSuperTile;
-							
-				
-					if(iDrawX<0)
-					{	
-						iDrawX+=100;
-						iDrawST=map.get(iDrawST).getiLeft();
-					}
-				
-						if(iDrawX>99)
-						{
-							iDrawX-=100;
-							iDrawST=map.get(iDrawST).getiRight();
-						}
-				
-						if(iDrawY<0)
-						{
-							iDrawY+=100;
-							iDrawST=map.get(iDrawST).getiTop();
-						}
-					if(iDrawY>99)
-					{
-						iDrawY-=100;
-						iDrawST=map.get(iDrawST).getiBottom();
-					}
-					
-					/*if(iDrawX<0||iDrawX>99||iDrawY<0||iDrawY>99)
-					{
-							System.out.println(iDrawX+" , "+iDrawY + " , " + iDrawST);
-					}*/
-					
-					drawTile = map.get(iDrawST).getTile(iDrawX,iDrawY);
-					g.drawImage(tile, (a+10)*50-xEdgeAdjust,(b+10)*50-yEdgeAdjust,(a+10)*50+50-xEdgeAdjust,(b+10)*50+50-yEdgeAdjust,drawTile.getX(),drawTile.getY(),drawTile.getX()+49,drawTile.getY()+49, null);
-					}
-		}
-		
-		doEvent();
-		for(int a=0; a<map.size();a++)
-		{
-			map.get(a).compareCreatures();
-		}
-		
-		drawCharacters(g);
-		g.clearRect(1000, 0, 300, 750);
-		
-		sBuffer=(hero.getTileX()+" , "+hero.getTileY()+" Frame: "+FrameX+" , "+FrameY);
-		g.drawString(sBuffer, iFramePixelsX,50);
-		sBuffer=(hero.getX()+ " , "+hero.getY()+" ("+hero.getiXinSuperTile()+" , "+hero.getiYinSuperTile()+")");
-		g.drawString(sBuffer, iFramePixelsX, 100);
-		sBuffer=""+iCurrentSuperTile+"";
-		g.drawString(sBuffer, iFramePixelsX,150);
-		
-		
-		//	g.setFont(new Font("New Courier",Font.BOLD,10));
-		//	map.get(iCurrentSuperTile).getCreature(0).trackCreature(g);
-		
-		
-		//bhButtons.drawButtons(g);
-		
-		
-		
-		
-		g.dispose();
-		getBufferStrategy().show();
-	}
+
 	public void drawCharacters(Graphics g)
 	{
 		
-		g.drawImage(tile, 1200,300,1249,349,0,50,49,99,null);
-		
-		map.get(iCurrentSuperTile).drawCreatures(g, tile, FrameX, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-		drawsideCharacters(g);
-		
-		g.drawImage(tile, hero.getX(),hero.getY(),hero.getX()+50,hero.getY()+50,0,100,50,150, null);
 	}
 	
-	//Below is a work in progress
-	public void drawsideCharacters(Graphics g)
-	{
-		//Side by Side and Corners all are drawn
-		
-		if(FrameX<10)
-		{
-			iBuffer=map.get(iCurrentSuperTile).getiLeft();
-			//System.out.println(iBuffer);
-			
-			if(iBuffer>-1)
-			{
-				map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-				
-				if(FrameY<10)
-				{
-					iBuffer=map.get(iBuffer).getiTop();
-					//System.out.println(iBuffer);
-					
-					if(iBuffer>-1)
-					{
-						map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-					}
-				}
-				if(FrameY>89)
-				{
-					iBuffer=map.get(iBuffer).getiBottom();
-					//System.out.println(iBuffer);
-					
-					if(iBuffer>-1)
-					{
-						map.get(iBuffer).drawCreatures(g, tile, FrameX+100, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-					}
-				}
-				
-			}
-		}
-		if(FrameX>89)
-		{
-			iBuffer=map.get(iCurrentSuperTile).getiRight();
-			//System.out.println(iBuffer);
-			
-			if(iBuffer>-1)
-			{
-				map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-				
-				if(FrameY<10)
-				{
-					iBuffer=map.get(iBuffer).getiTop();
-					//System.out.println(iBuffer);
-					
-					if(iBuffer>-1)
-					{
-						map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-					}
-				}
-				if(FrameY>89)
-				{
-					iBuffer=map.get(iBuffer).getiBottom();
-					//System.out.println(iBuffer);
-					
-					if(iBuffer>-1)
-					{
-						map.get(iBuffer).drawCreatures(g, tile, FrameX-100, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-					}
-				}
-			}
-		}
-		
-				
-		if(FrameY<10)
-		{
-			iBuffer=map.get(iCurrentSuperTile).getiTop();
-			//System.out.println(iBuffer);
-			
-			if(iBuffer>-1)
-			{
-				map.get(iBuffer).drawCreatures(g, tile, FrameX, FrameY+100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-			}
-		}
-		if(FrameY>89)
-		{
-			iBuffer=map.get(iCurrentSuperTile).getiBottom();
-			//System.out.println(iBuffer);
-			
-			if(iBuffer>-1)
-			{
-				map.get(iBuffer).drawCreatures(g, tile, FrameX, FrameY-100, iFrameXSize, iFrameYSize, xEdgeAdjust, yEdgeAdjust);
-			}
-		}
-		
-		
-	}
 	
 	//This is a work in progress as well
 	public void correctCreatures()
@@ -741,242 +523,6 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 				}
 		}
 	}
-	public void moveWorking(KeyEvent k)
-	{
-		switch(k.getKeyCode())
-		{
-		case KeyEvent.VK_LEFT:
-			
-			
-			rEdge=false;
-			
-			
-			hero.dPosX(-iSpeed);				//Moves Hero left by "iSpeed" in the tile
-			
-			if(hero.getinTilePosX()<0)
-			{
-				hero.subTileX();
-				hero.dPosX(50);
-			}
-			
-			if(hero.getX()<150)
-			{
-				lEdge=true;						//sets lEdge to true if "hero" is close enough to edge
-			}
-			
-			if(!lEdge)
-			{
-				hero.setX(hero.getX()-iSpeed);  //Moves "hero" if not near Edge
-			}
-			
-			if(lEdge)
-			{
-				xEdgeAdjust-=iSpeed;			//Scrolls Matrix
-			}
-			
-			if(xEdgeAdjust<-50)
-			{
-				xEdgeAdjust+=50;				//Resets Edge Adjust Once Reaching Next Time
-				
-				if(FrameX>0)
-				{
-					FrameX--;					//Moves Frame to the Left within SuperTile
-				}
-				if(FrameX==0)
-				{
-					iCurrentSuperTile=map.get(iCurrentSuperTile).getiLeft();		
-					FrameX+=100;				//Moves Frame to the Rightmost Tile of the SuperTile to the Left ST	
-					hero.addTileX(99);			//Moves "hero" to the Rightmost Tile of the SuperTile to the Left ST
-				}
-			}
-						
-			break;
-		case KeyEvent.VK_RIGHT:
-			
-			
-			lEdge=false;
-			
-			hero.dPosX(iSpeed);
-			if(hero.getinTilePosX()>50)
-			{
-				hero.addTileX();
-				hero.dPosX(-50);
-			}
-			
-			if(hero.getX()>(iFramePixelsX-150))
-			{
-				rEdge=true;
-			}
-			
-			
-			
-			
-			
-			if(!rEdge)
-			{
-			hero.setX(hero.getX()+iSpeed);
-			}
-			
-			if(rEdge)
-			{
-				xEdgeAdjust+=iSpeed;
-			}
-			
-			if(xEdgeAdjust>50)
-			{
-				xEdgeAdjust-=50;
-				if(FrameX<99)
-				{
-					FrameX++;
-				}
-				if(FrameX==99)
-				{
-					iCurrentSuperTile=map.get(iCurrentSuperTile).getiRight();
-					FrameX-=99;
-					hero.subTileX(99);
-				}
-				
-			}
-			
-			
-			break;
-		case KeyEvent.VK_UP:
-			
-			hero.dPosY(-iSpeed);
-			if(hero.getinTilePosY()<0)
-			{
-				hero.subTileY();
-				hero.dPosY(50);
-			}
-			
-			if(hero.getY()<150)
-			{
-				tEdge=true;
-			}
-			
-			bEdge=false;
-			if(!tEdge)
-			{
-			hero.setY(hero.getY()-iSpeed);
-			}
-			if(tEdge)
-			{
-				yEdgeAdjust-=iSpeed;
-			}
-			if(yEdgeAdjust<-50)
-			{
-				yEdgeAdjust+=50;
-				if(FrameY>0)
-				{
-					FrameY--;
-				}
-				
-				if(FrameY==0)
-				{
-					iCurrentSuperTile=map.get(iCurrentSuperTile).getiTop();
-					FrameY+=100;
-					hero.addTileY(99);
-				}
-				
-			}
-				
-			
-			break;
-		case KeyEvent.VK_DOWN:
-			
-			hero.dPosY(iSpeed);
-			if(hero.getinTilePosY()>50)
-			{
-				hero.addTileY();
-				hero.dPosY(-50);
-			}
-			
-			if(hero.getY()>(iFramePixelsY-150))
-			{
-				bEdge=true;
-			}
-			
-			tEdge=false;
-			if(!bEdge)
-			{
-			hero.setY(hero.getY()+iSpeed);
-			}
-			if(bEdge)
-			{
-				yEdgeAdjust+=iSpeed;
-			}
-			
-			if(yEdgeAdjust>50)
-			{
-				yEdgeAdjust-=50;
-				if(FrameY<99)
-				{
-					FrameY++;
-				}
-				if(FrameY==99)
-				{
-					iCurrentSuperTile=map.get(iCurrentSuperTile).getiBottom();
-					FrameY-=99;
-					hero.subTileY(99);
-				}
-			}
-			
-			
-			break;
-		
-		}
-	}
-	
-	//Need to add switching to new SuperTiles and reseting "hero" frames
-	
-	public void testMove(KeyEvent k)
-	{
-		switch(k.getKeyCode())
-		{
-		case KeyEvent.VK_LEFT:		
-			hero.addiXinSuperTile(-iSpeed);
-			edgeDetect();
-			if(lEdge)
-			{	
-				//hero.addiXinSuperTile(iSpeed);
-				xEdgeAdjust-=iSpeed;
-			}
-			correctFrame();
-			break;
-		case KeyEvent.VK_RIGHT:
-			hero.addiXinSuperTile(iSpeed);
-			edgeDetect();
-			if(rEdge)
-			{
-				//hero.addiXinSuperTile(-iSpeed);
-				xEdgeAdjust+=iSpeed;
-			}
-			correctFrame();
-			break;
-		case KeyEvent.VK_UP:
-			hero.addiYinSuperTile(-iSpeed);
-			edgeDetect();
-			if(tEdge)
-			{
-				//hero.addiYinSuperTile(iSpeed);
-				yEdgeAdjust-=iSpeed;
-			}
-			correctFrame();
-			break;
-		case KeyEvent.VK_DOWN:
-			hero.addiYinSuperTile(iSpeed);
-			edgeDetect();
-			if(bEdge)
-			{
-				//hero.addiYinSuperTile(-iSpeed);
-				yEdgeAdjust+=iSpeed;
-			}
-			correctFrame();
-			break;
-		}
-		hero.assessPosition(FrameX, FrameY,xEdgeAdjust,yEdgeAdjust);
-	}
-	
 	public void edgeDetect()
 	{
 		if(hero.getX()<150)
@@ -1071,14 +617,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	public void keyPressed(KeyEvent k) {
 		
 		
-		if(!bMoveTest)
-		{
-			moveWorking(k); //Does the bugged out movement
-		}
-		if(bMoveTest)
-		{
-			testMove(k);	//Does new code
-		}
+
 		
 		
 		
