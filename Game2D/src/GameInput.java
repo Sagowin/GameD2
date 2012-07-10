@@ -12,17 +12,263 @@ public class GameInput implements KeyListener, MouseListener{
 		game = g;
 	}
 	
+	public void edgeDetect()
+	{
+		if(game.hero.iScreenX<150)
+		{
+			game.lEdge=true;
+		}else
+		{
+			game.lEdge=false;
+		}
+		
+		if(game.hero.iScreenX>850)
+		{
+			game.rEdge=true;
+		}else
+		{
+			game.rEdge=false;
+		}
+		if(game.hero.iScreenY<150)
+		{
+			game.tEdge=true;
+		}else
+		{
+			game.tEdge=false;
+		}
+		if(game.hero.iScreenY>600)
+		{
+			game.bEdge=true;
+		}else
+		{
+			game.bEdge=false;
+		}
+		
+		
+	}
+	
+	public void correctEdgeAdjust()
+	{
+		
+		if(game.xEdgeAdjust>50)
+		{
+			
+			game.xEdgeAdjust-=50;	//Re-adjusts Draw Function for Frame Shift
+			game.FrameX++;			//Shifts From to the Right
+			
+					
+			if(game.iArrayPositionX==21) 	//21 is the maximum position in tFrameArray to moves to the right
+			{								//[*note this ends up being a little counter intuitive*]
+				game.iArrayPositionX=0;
+			}else
+			{
+				game.iArrayPositionX++;
+			}
+			game.extendMap();
+			shiftRight();		//Loads the new right most column at iArrayPositionX-1 replacing the "far left" column
+		}
+		
+		if(game.xEdgeAdjust<-50)
+		{
+			game.xEdgeAdjust+=50;		//Re-adjusts Draw Function for Frame Shift
+			game.FrameX--;				//Shifts From to the Left
+			
+						
+			if(game.iArrayPositionX==0) 	//Moves the opposite of it's right adjust counterpart ^above^
+			{
+				game.iArrayPositionX=21;
+			}else
+			{
+				game.iArrayPositionX--;
+			}
+			game.extendMap();
+			shiftLeft();			//Loads the new left most column at iArrayPositionX replacing the "far right" column
+			
+			
+		}
+		
+		if(game.yEdgeAdjust>50)
+		{
+			game.yEdgeAdjust-=50;		//Re-adjusts Draw Function for Frame Shift
+			game.FrameY--;			//Shifts Frame Down
+			
+					
+			if(game.iArrayPositionY==16)
+			{
+				game.iArrayPositionY=0;
+			}else
+			{
+				game.iArrayPositionY++;
+			}
+			game.extendMap();
+			shiftDown();		//Loads the new bottom most column at iArrayPositionY-1 replacing the "far top" column
+			
+		}
+		
+		if(game.yEdgeAdjust<-50)
+		{
+			
+			
+			game.yEdgeAdjust+=50;	//Re-adjusts Draw Function for Frame Shift
+			game.FrameY++;			//Shifts Frame down
+			
+						
+			if(game.iArrayPositionY==0)
+			{
+				game.iArrayPositionY=16;
+			}else
+			{
+				game.iArrayPositionY--;
+			}
+			game.extendMap();
+			shiftUp();				//Loads the new top most column at iArrayPositionY replacing the "far bottom" column
+		}
+		
+		
+	}
+	
+	//Reworked and Working
+	public void shiftDown()
+	{
+		for(int a=0;a<21;a++)
+		{
+			if(game.iArrayPositionY>1)
+			{
+				game.tArrayFrame[a][game.iArrayPositionY-1]=game.tArrayFrame[a][game.iArrayPositionY-2].tB;
+				
+			}else if(game.iArrayPositionY==1)
+			{
+				game.tArrayFrame[a][game.iArrayPositionY-1]=game.tArrayFrame[a][16].tB;
+				
+			}else if (game.iArrayPositionY==0)
+			{
+				game.tArrayFrame[a][16]=game.tArrayFrame[a][15].tB;
+			}
+		}	
+	}
+	
+	//Reworked and Working
+	public void shiftUp()
+	{
+		for(int a=0;a<21;a++)
+		{
+			if(game.iArrayPositionY<16)
+			{
+				game.tArrayFrame[a][game.iArrayPositionY]=game.tArrayFrame[a][game.iArrayPositionY+1].tT;
+			}else
+			{
+				game.tArrayFrame[a][game.iArrayPositionY]=game.tArrayFrame[a][0].tT;
+			}
+		}
+	}
+	
+	//Reworked and Working
+	public void shiftLeft()
+	{
+		for(int a=0;a<17;a++)
+		{
+			if(game.iArrayPositionX<21)
+			{
+				game.tArrayFrame[game.iArrayPositionX][a]=game.tArrayFrame[game.iArrayPositionX+1][a].tL;
+			}else
+			{
+				game.tArrayFrame[game.iArrayPositionX][a]=game.tArrayFrame[0][a].tL;
+			}
+		}
+		
+	}
+	
+	//Redone Worked and Working
+	public void shiftRight()
+	{
+		for(int a=0;a<17;a++)
+		{
+			if(game.iArrayPositionX>1)
+			{
+				game.tArrayFrame[game.iArrayPositionX-1][a]=game.tArrayFrame[game.iArrayPositionX-2][a].tR;
+			}else if(game.iArrayPositionX==1)
+			{
+				game.tArrayFrame[game.iArrayPositionX-1][a]=game.tArrayFrame[21][a].tR;
+				
+			}else if(game.iArrayPositionX==0)
+			{
+				game.tArrayFrame[21][a]=game.tArrayFrame[20][a].tR;
+			}
+		}
+	}
+	
+	
+	
 	public void keyPressed(KeyEvent k) {
 		
-		if(!game.bMoveTest)
-		{
-			moveWorking(k); //Does the bugged out movement
-		}
-		else
-		{
-			testMove(k);	//Does new code
-		}
+		//game.extendMap();
 		
+		switch(k.getKeyCode())
+		{
+		case KeyEvent.VK_LEFT:
+					
+			game.hero.iPosX-=game.iSpeed;
+			
+			if(game.lEdge)
+			{
+				game.xEdgeAdjust-=game.iSpeed;
+				//game.hero.iPosX+=game.iSpeed;
+				
+			}
+			game.hero.correctCharacter(game.FrameX, game.FrameY, game.xEdgeAdjust,game.yEdgeAdjust);
+			correctEdgeAdjust();
+			edgeDetect();
+			
+			break;
+			
+		case KeyEvent.VK_RIGHT:
+			game.hero.iPosX+=game.iSpeed;
+			if(game.rEdge)
+			{
+				game.xEdgeAdjust+=game.iSpeed;
+				//game.hero.iPosX-=game.iSpeed;
+				
+			}
+			game.hero.correctCharacter(game.FrameX, game.FrameY,game.xEdgeAdjust,game.yEdgeAdjust);
+			correctEdgeAdjust();
+			edgeDetect();
+			
+			
+			break;
+				
+		case KeyEvent.VK_UP:
+			
+			game.hero.iPosY+=game.iSpeed;
+			
+			if(game.tEdge)
+			{
+				game.yEdgeAdjust-=game.iSpeed;
+			
+				//game.hero.iPosY+=game.iSpeed;
+				
+			}
+			game.hero.correctCharacter(game.FrameX, game.FrameY, game.xEdgeAdjust,game.yEdgeAdjust);
+			correctEdgeAdjust();
+			edgeDetect();
+			
+			
+			break;
+			
+		case KeyEvent.VK_DOWN:
+			game.hero.iPosY-=game.iSpeed;
+			
+			if(game.bEdge)
+			{
+				game.yEdgeAdjust+=game.iSpeed;
+				//game.hero.iPosY-=game.iSpeed;
+				
+			}
+			game.hero.correctCharacter(game.FrameX, game.FrameY, game.xEdgeAdjust,game.yEdgeAdjust);
+			correctEdgeAdjust();
+			edgeDetect();
+			
+			break;
+		}
 				
 	}
 	@Override
@@ -65,244 +311,9 @@ public class GameInput implements KeyListener, MouseListener{
 		
 		
 	}
+
 	
 	
-	
-	public void moveWorking(KeyEvent k)
-	{
-		switch(k.getKeyCode())
-		{
-		case KeyEvent.VK_LEFT:
-			
-			
-			game.rEdge=false;
-			
-			
-			game.hero.dPosX(-game.iSpeed);				//Moves Hero left by "iSpeed" in the tile
-			
-			if(game.hero.getinTilePosX()<0)
-			{
-				game.hero.subTileX();
-				game.hero.dPosX(50);
-			}
-			
-			if(game.hero.getX()<150)
-			{
-				game.lEdge=true;						//sets lEdge to true if "hero" is close enough to edge
-			}
-			
-			if(!game.lEdge)
-			{
-				game.hero.setX(game.hero.getX()-game.iSpeed);  //Moves "hero" if not near Edge
-			}
-			
-			if(game.lEdge)
-			{
-				game.xEdgeAdjust-=game.iSpeed;			//Scrolls Matrix
-			}
-			
-			if(game.xEdgeAdjust<-50)
-			{
-				game.xEdgeAdjust+=50;				//Resets Edge Adjust Once Reaching Next Time
-				
-				if(game.FrameX>0)
-				{
-					game.FrameX--;					//Moves Frame to the Left within SuperTile
-				}
-				if(game.FrameX==0)
-				{
-					game.iCurrentSuperTile=game.map.get(game.iCurrentSuperTile).getiLeft();		
-					game.FrameX+=100;				//Moves Frame to the Rightmost Tile of the SuperTile to the Left ST	
-					game.hero.addTileX(99);			//Moves "hero" to the Rightmost Tile of the SuperTile to the Left ST
-				}
-			}
-						
-			break;
-		case KeyEvent.VK_RIGHT:
-			
-			
-			game.lEdge=false;
-			
-			game.hero.dPosX(game.iSpeed);
-			if(game.hero.getinTilePosX()>50)
-			{
-				game.hero.addTileX();
-				game.hero.dPosX(-50);
-			}
-			
-			if(game.hero.getX()>(game.display.iFramePixelsX-150))
-			{
-				game.rEdge=true;
-			}
-			
-			
-			
-			
-			
-			if(!game.rEdge)
-			{
-				game.hero.setX(game.hero.getX()+game.iSpeed);
-			}
-			
-			if(game.rEdge)
-			{
-				game.xEdgeAdjust+=game.iSpeed;
-			}
-			
-			if(game.xEdgeAdjust>50)
-			{
-				game.xEdgeAdjust-=50;
-				if(game.FrameX<99)
-				{
-					game.FrameX++;
-				}
-				if(game.FrameX==99)
-				{
-					game.iCurrentSuperTile=game.map.get(game.iCurrentSuperTile).getiRight();
-					game.FrameX-=99;
-					game.hero.subTileX(99);
-				}
-				
-			}
-			
-			
-			break;
-		case KeyEvent.VK_UP:
-			
-			game.hero.dPosY(-game.iSpeed);
-			if(game.hero.getinTilePosY()<0)
-			{
-				game.hero.subTileY();
-				game.hero.dPosY(50);
-			}
-			
-			if(game.hero.getY()<150)
-			{
-				game.tEdge=true;
-			}
-			
-			game.bEdge=false;
-			if(!game.tEdge)
-			{
-				game.hero.setY(game.hero.getY()-game.iSpeed);
-			}
-			if(game.tEdge)
-			{
-				game.yEdgeAdjust-=game.iSpeed;
-			}
-			if(game.yEdgeAdjust<-50)
-			{
-				game.yEdgeAdjust+=50;
-				if(game.FrameY>0)
-				{
-					game.FrameY--;
-				}
-				
-				if(game.FrameY==0)
-				{
-					game.iCurrentSuperTile=game.map.get(game.iCurrentSuperTile).getiTop();
-					game.FrameY+=100;
-					game.hero.addTileY(99);
-				}
-				
-			}
-				
-			
-			break;
-		case KeyEvent.VK_DOWN:
-			
-			game.hero.dPosY(game.iSpeed);
-			if(game.hero.getinTilePosY()>50)
-			{
-				game.hero.addTileY();
-				game.hero.dPosY(-50);
-			}
-			
-			if(game.hero.getY()>(game.display.iFramePixelsY-150))
-			{
-				game.bEdge=true;
-			}
-			
-			game.tEdge=false;
-			if(!game.bEdge)
-			{
-				game.hero.setY(game.hero.getY()+game.iSpeed);
-			}
-			if(game.bEdge)
-			{
-				game.yEdgeAdjust+=game.iSpeed;
-			}
-			
-			if(game.yEdgeAdjust>50)
-			{
-				game.yEdgeAdjust-=50;
-				if(game.FrameY<99)
-				{
-					game.FrameY++;
-				}
-				if(game.FrameY==99)
-				{
-					game.iCurrentSuperTile=game.map.get(game.iCurrentSuperTile).getiBottom();
-					game.FrameY-=99;
-					game.hero.subTileY(99);
-				}
-			}
-			
-			
-			break;
-		
-		}
-	}
-	
-	//Need to add switching to new SuperTiles and reseting "hero" frames
-	
-	public void testMove(KeyEvent k)
-	{
-		switch(k.getKeyCode())
-		{
-		case KeyEvent.VK_LEFT:		
-			game.hero.addiXinSuperTile(-game.iSpeed);
-			game.edgeDetect();
-			if(game.lEdge)
-			{	
-				//hero.addiXinSuperTile(iSpeed);
-				game.xEdgeAdjust-=game.iSpeed;
-			}
-			game.correctFrame();
-			break;
-		case KeyEvent.VK_RIGHT:
-			game.hero.addiXinSuperTile(game.iSpeed);
-			game.edgeDetect();
-			if(game.rEdge)
-			{
-				//hero.addiXinSuperTile(-iSpeed);
-				game.xEdgeAdjust+=game.iSpeed;
-			}
-			game.correctFrame();
-			break;
-		case KeyEvent.VK_UP:
-			game.hero.addiYinSuperTile(-game.iSpeed);
-			game.edgeDetect();
-			if(game.tEdge)
-			{
-				//hero.addiYinSuperTile(iSpeed);
-				game.yEdgeAdjust-=game.iSpeed;
-			}
-			game.correctFrame();
-			break;
-		case KeyEvent.VK_DOWN:
-			game.hero.addiYinSuperTile(game.iSpeed);
-			game.edgeDetect();
-			if(game.bEdge)
-			{
-				//hero.addiYinSuperTile(-iSpeed);
-				game.yEdgeAdjust+=game.iSpeed;
-			}
-			game.correctFrame();
-			break;
-		}
-		game.hero.assessPosition(game.FrameX, game.FrameY,game.xEdgeAdjust,game.yEdgeAdjust);
-	}
 	
 	
 	

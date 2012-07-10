@@ -2,13 +2,44 @@
 public class Tile {
 
 	int type=-1;
-	int tileX=0;
-	int tileY=0;
-	final int GRASS=1;
+	int iIdentity=0;
+	int iX=0;
+	int iY=0;
+	int iPixelX=0;
+	int iPixelY=0;
+	
 	final int FOREST=0;
+	final int GRASS=1;
+	final int DIRT=2;
 	final int DESERT=3;
 	final int ICE=4;
-	final int DIRT=2;
+	
+	Tile tL;
+	Tile tR;
+	Tile tT;
+	Tile tB;
+	Tile tTL;
+	Tile tTR;
+	Tile tBL;
+	Tile tBR;
+	
+	boolean bL=false;
+	boolean bR=false;
+	boolean bT=false;
+	boolean bB=false;
+	boolean bTL=false;
+	boolean bTR=false;
+	boolean bBR=false;
+	boolean bBL=false;
+	
+	
+	boolean bEmpty=true;
+	
+	//Buffers
+	boolean bBuffer=false;
+	int iBuffer=0;
+	int iXBuffer=0;
+	int iYBuffer=0;
 	
 	public Tile()
 	{
@@ -20,42 +51,79 @@ public class Tile {
 		setType(t);
 	}
 	
+		
+	public Tile(int x, int y, int t)
+	{
+		iX=x;
+		iY=y;
+		bEmpty=false;
+		setType(t);
+	}
+	
+	
 	public void setType(int t)
 	{
 		type=t;
 		switch(type)
 		{
 		case GRASS:
-		tileX=0;
+		
 		break;
 		case FOREST: //grass
-		tileX=50;
+		iPixelX=50;
 		break;
 		case DESERT: //desert
-		tileX=100;
+		iPixelX=100;
 		break;
 		case ICE:
-		tileX=150;
+		iPixelX=150;
 		break;
 		case DIRT:
-		tileX=200;
+		iPixelX=200;
 		break;
 		}
 	}
 	
+	
+	
+	
+	//Getters and Setters
 	public int getType()
 	{
 		return type;
 	}
-	
 	public int getX()
 	{
-		return tileX;
+		return iX;
 	}
-	
 	public int getY()
 	{
-		return tileY;
+		return iY;
+	}
+
+
+	public int getiIdentity() {
+		return iIdentity;
+	}
+
+	public void setiIdentity(int iIdentity) {
+		this.iIdentity = iIdentity;
+	}
+
+	public int getiPixelX() {
+		return iPixelX;
+	}
+
+	public void setiPixelX(int iPixelX) {
+		this.iPixelX = iPixelX;
+	}
+
+	public int getiPixelY() {
+		return iPixelY;
+	}
+
+	public void setiPixelY(int iPixelY) {
+		this.iPixelY = iPixelY;
 	}
 	
 	

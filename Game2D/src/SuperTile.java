@@ -1,502 +1,297 @@
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.Random;
 
 
 public class SuperTile {
 
-	Tile[][] sTile= new Tile[100][100];
-	int[] iArray = new int[20];
-	ArrayList<TileObject> sList= new ArrayList<TileObject>();
-	ArrayList<Creature> cList= new ArrayList<Creature>();
-	int iMax=0;
-	int iZones=0;
-	int iTypeBase=-1;
-	int iCount=1;
-	int iMod=-1;
-	int iIdentity=0;
-	int iLeft=-1;
-	int iRight=-1;
-	int iTop=-1;
-	int iBottom=-1;
-	int iTLCorner=-1;
-	int iTRCorner=-1;
-	int iBLCorner=-1;
-	int iBRCorner=-1;
-	int iPatchProgress=1;
-	/* 	2-->	WEST
-		3-->	NORTH WEST
-		5-->	NORTH
-		7-->	NORTH EAST
-		11-->	EAST
-		13-->	SOUTH EAST
-		17-->	SOUTH
-		19-->	SOUTH WEST
-	*/
-	boolean bPatched=false;
-	int iX=0;
-	int iY=0;
+	Tile[][] tTileArray= new Tile[100][100];		//Holds the tile references
+	int iX=0;										//X position in map
+	int iY=0;										//Y Position in map
+	int iXBL=0;	
+	int iYBL=0;
+	int iXBuffer=0;									//Buffers Position of new Tile
+	int iYBuffer=0;									//Buffers Position of new Tile
 	Random rand = new Random();
-	int iBuffer=-1;
-	int iBuffer2=-1;
-	boolean bBuffer=false;
-	ArrayList<Creature> creaturelistBuffer= new ArrayList<Creature>();
-	boolean bGen = false;
-	Creature cBuffer= new Creature(0,0,0,0);
 	
-	
-	public ArrayList<Creature> creaturesCorrect()
-	{
-		creaturelistBuffer.clear();
-		
-		for(int a=0;a<cList.size();a++)
-		{
-			cBuffer=cList.get(a);
-			bBuffer=true;
-			
-			if(bBuffer&&cBuffer.getiX()<0)
-			{
-				
-				cBuffer.setiMoveSuperTile(1);
-				cBuffer.setiX(cBuffer.getiX()+100);
-				cBuffer.setbAlive(true);
-				creaturelistBuffer.add(cBuffer);
-				bBuffer=false;
-				System.out.println(cList.get(a).isbAlive()+" , "+cBuffer.isbAlive()+ " , "+bBuffer);	
-			}
-			if(bBuffer&&cBuffer.getiX()>99)
-			{
-				cBuffer.setiMoveSuperTile(2);
-				cBuffer.setiX(cBuffer.getiX()-100);
-				cBuffer.setbAlive(true);
-				creaturelistBuffer.add(cBuffer);
-				bBuffer=false;
-				System.out.println(cList.get(a).isbAlive()+" , "+cBuffer.isbAlive()+ " , "+bBuffer);
-			}
-			if(bBuffer&&cBuffer.getiY()<0)
-			{
-				cBuffer.setiMoveSuperTile(3);
-				cBuffer.setiY(cBuffer.getiY()+100);
-				cBuffer.setbAlive(true);
-				creaturelistBuffer.add(cBuffer);
-				bBuffer=false;
-			}
-			if(bBuffer&&cBuffer.getiY()>99)
-			{
-				cBuffer.setiMoveSuperTile(4);
-				cBuffer.setiY(cBuffer.getiY()-100);
-				cBuffer.setbAlive(true);
-				creaturelistBuffer.add(cBuffer);
-				bBuffer=false;
-			}
-			
-			
-		}
-		
-		return creaturelistBuffer;
-	}
-	
-	
-	public int getiX() {
-		return iX;
-	}
-
-	public void setiX(int iX) {
-		this.iX = iX;
-	}
-
-	public int getiY() {
-		return iY;
-	}
-
-	public void setiY(int iY) {
-		this.iY = iY;
-	}
-
-	public void checkPatched()
-	{
-		//System.out.println("SuperTile Number :"+ iIdentity+ " --> " +iLeft+ " , "+iRight+ " , "+iTop+ " , "+iBottom+ " , "+iTLCorner+ " , "+iTRCorner+ " , "+iBLCorner+ " , "+iBRCorner);
-		
-		if(		iLeft>0&&
-				iRight>0&&
-				iTop>0&&
-				iBottom>0&&
-				iTLCorner>0&&
-				iTRCorner>0&&
-				iBLCorner>0&&
-				iBRCorner>0)
-		{
-			bPatched=true;
-			System.out.println("SuperTile " + iIdentity + " is fully patched");
-		}
-		
-		
-	}
-	public boolean isbPatched()
-	{
-		return bPatched;
-	}
-
-	public int getiTLCorner() {
-		return iTLCorner;
-	}
-
-	public void setiTLCorner(int iTLCorner) {
-		this.iTLCorner = iTLCorner;
-	}
-
-	public int getiTRCorner() {
-		return iTRCorner;
-	}
-
-	public void setiTRCorner(int iTRCorner) {
-		this.iTRCorner = iTRCorner;
-	}
-
-	public int getiBLCorner() {
-		return iBLCorner;
-	}
-
-	public void setiBLCorner(int iBLCorner) {
-		this.iBLCorner = iBLCorner;
-	}
-
-	public int getiBRCorner() {
-		return iBRCorner;
-	}
-
-	public void setiBRCorner(int iBRCorner) {
-		this.iBRCorner = iBRCorner;
-	}
-	
-		
-		
-	public int getiIdentity() {
-		return iIdentity;
-	}
-
-	public void setiIdentity(int iIdentity) {
-		this.iIdentity = iIdentity;
-	}
-
-	public int getiLeft() {
-		return iLeft;
-	}
-
-	public void setiLeft(int iLeft) {
-		this.iLeft = iLeft;
-	}
-
-	public int getiRight() {
-		return iRight;
-	}
-
-	public void setiRight(int iRight) {
-		this.iRight = iRight;
-	}
-
-	public int getiTop() {
-		return iTop;
-	}
-
-	public void setiTop(int iTop) {
-		this.iTop = iTop;
-	}
-
-	public int getiBottom() {
-		return iBottom;
-	}
-
-	public void setiBottom(int iBottom) {
-		this.iBottom = iBottom;
-	}
-	
-	public Creature getCreature(int a)
-	{
-		return cList.get(a);
-	}
+	SuperTile stL;
+	SuperTile stR;
+	SuperTile stT;
+	SuperTile stB;
+	SuperTile stTL;
+	SuperTile stTR;
+	SuperTile stBL;
+	SuperTile stBR;
+	boolean bPatched=false;
 	
 	public SuperTile()
 	{
 		
 	}
 	
-	public SuperTile(int i)
+	public SuperTile(int x, int y)
 	{
-		System.out.println("SuperTile has been made with identity: "+i);
-		iIdentity=i;
+		iX=x;
+		iY=y;
+		iXBL=x*100;
+		iYBL=y*100;
+		
+		System.out.println("SuperTile created at "+iX+" , "+iY);
+		
+		//Initialize Array
 		for(int a=0;a<100;a++)
 		{
 			for(int b=0;b<100;b++)
 			{
-				sTile[a][b] = new Tile();
+				tTileArray[a][b]= new Tile();
 			}
 		}
-		
-		if(!bGen)
-		{
-			genSuperTile();
-			bGen=true;
-		}
-				
-		//sTile[50][50].setType(2);
-		//makeSuperTile();
-		
 	}
-	public void addTile(int x, int y, int t)
+	
+	public void addTile(int x, int y)
 	{
+		iXBuffer=x;
+		iYBuffer=y;
 		
-		sTile[x][y].setType(t);
-	}	
+		if(x<0)
+		{
+			x=100+x;
+		}
+		if(y<0)
+		{
+			y=100+y;
+		}
+		
+		tTileArray[x][y]= new Tile(iXBuffer,iYBuffer,rand.nextInt(3));
+		patchnewTile(x,y);
+	}
+	
 	public Tile getTile(int x, int y)
 	{
-		//System.out.println(x+" "+ y+" "+sTile.length + " " +sTile[0].length);
-		return sTile[x][y];
-	}
-	public void addTileObj(int x, int y)
-	{
-		TileObject t = new TileObject(x,y,iIdentity);
-		sList.add(t);
-				
-	}
-	public void addCreature(int x, int y, int t)
-	{
-		Creature c = new Creature(x,y,iIdentity, t);
-		bBuffer=true;
-		
-		for(int a=0;a<cList.size();a++)
+		if(x<0)
 		{
-			if(!(cList.get(a).isbAlive()))
-			{
-				cList.set(a, c);
-				//System.out.println(a +" has been resurrected");
-				a=cList.size();
-				bBuffer=false;
-				
-			}
+			x=100+x;
 		}
-		
-		if(bBuffer)
+		if(y<0)
 		{
-			cList.add(c);
+			y=100+y;
 		}
+		return tTileArray[x][y];
 	}
-	public void addCreature(Creature c)
+	
+	public void patchnewTile(int x, int y)
 	{
-		bBuffer=true;
 		
-		for(int a=0;a<cList.size();a++)
+		//Left
+		if(x>0&&tTileArray[x-1][y]!=null)
 		{
-			if(!(cList.get(a).isbAlive()))
-			{
-				cList.set(a, c);
-				//System.out.println(a +" has been resurrected");
-				a=cList.size();
-				bBuffer=false;
-				
-			}
+		tTileArray[x][y].tL=tTileArray[x-1][y];
+		tTileArray[x-1][y].tR=tTileArray[x][y];
+		
+		tTileArray[x][y].bL=true;
+		tTileArray[x-1][y].bR=true;
+		
+		}
+		if(x==0&&stL!=null&&stL.tTileArray[99][y]!=null)
+		{
+			tTileArray[x][y].tL=stL.tTileArray[99][y];
+			stL.tTileArray[99][y].tR=tTileArray[x][y];
+			
+			tTileArray[x][y].bL=true;
+			stL.tTileArray[99][y].bR=true;
 		}
 		
-		if(bBuffer)
+		//Top Left
+		if(x>0&&y<99&&tTileArray[x-1][y+1]!=null)
 		{
-			cList.add(c);
+		tTileArray[x][y].tTL=tTileArray[x-1][y+1];
+		tTileArray[x-1][y+1].tBR=tTileArray[x][y];
+		
+		tTileArray[x][y].bTL=true;
+		tTileArray[x-1][y+1].bBR=true;
 		}
-	}
-	public void drawCreatures(Graphics g, BufferedImage tile, int xFrame, int yFrame, int frameSizeX, int frameSizeY, int xEdgeAdjust, int yEdgeAdjust)
-	{
-		for(int a=0;a<cList.size();a++)
+		if(x==0&&y<99&&stL!=null&&stL.tTileArray[99][y+1]!=null)
 		{
-			if(	cList.get(a).getiX()>(xFrame-11)&&
-				cList.get(a).getiX()<(xFrame+frameSizeX-10)&&
-				cList.get(a).getiY()>(yFrame-11)&&
-				cList.get(a).getiY()<(yFrame+frameSizeY-10))
-			{
-				
-				if(cList.get(a).isbAlive())
-				{
-				cList.get(a).drawCreature(g, tile, xFrame, yFrame, xEdgeAdjust, yEdgeAdjust);
-				}
-				/*g.drawImage(tile, 	(cList.get(a).getiX()-xFrame+10)*50-xEdgeAdjust,
-									(cList.get(a).getiY()-yFrame+10)*50-yEdgeAdjust,
-									(cList.get(a).getiX()-xFrame+10)*50+50-xEdgeAdjust,
-									(cList.get(a).getiY()-yFrame+10)*50+50-yEdgeAdjust,
-									cList.get(a).getiPixelX(),
-									cList.get(a).getiPixelY(),
-									cList.get(a).getiPixelX()+50,
-									cList.get(a).getiPixelY()+50,null);*/
-			}
+			tTileArray[x][y].tTL=stL.tTileArray[99][y+1];
+			stL.tTileArray[99][y+1].tBR=tTileArray[x][y];
+			
+			tTileArray[x][y].bTL=true;
+			stL.tTileArray[99][y+1].bBR=true;
 		}
-	}
-	public void moveCreatures()
-	{
-		for(int a=0;a<cList.size();a++)
+		if(x>0&&y==99&&stT!=null&&stT.tTileArray[x-1][0]!=null)
 		{
-			if(cList.get(a).isbAlive())
-			{	
-				iBuffer=cList.get(a).getiPreyNumber();
-				
-				if(iBuffer!=-1)
-				{
-					
-					cList.get(a).moveCreature(cList.get(iBuffer));
-					
-				}else
-				{
-					cList.get(a).moveCreature();
-				}
-			}
+			tTileArray[x][y].tTL=stT.tTileArray[x-1][0];
+			stT.tTileArray[x-1][0].tBR=tTileArray[x][y];
+			
+			tTileArray[x][y].bTL=true;
+			stT.tTileArray[x-1][0].bBR=true;
+			
 		}
-	}
-	public void compareCreatures()
-	{
-		for(int a=0;a<cList.size();a++)
+		if(x==0&&y==99&&stTL!=null&&stTL.tTileArray[99][0]!=null)
 		{
-			while(a<cList.size()&&!(cList.get(a).isbAlive()))
-			{
-				a++;
-			}
+			tTileArray[x][y].tTL=stTL.tTileArray[99][0];
+			stTL.tTileArray[99][0].tBR=tTileArray[x][y];
 			
-			//Start is my prey dead?
-			if(a<cList.size())
-			{
-				
-				iBuffer=cList.get(a).getiPreyNumber();
-			
-				if(iBuffer>0&&!(cList.get(iBuffer).isbAlive()))
-				{
-					cList.get(a).setiPreyNumber(-1);
-					//System.out.println(a+" says: my target is dead =(");
-				}
-			
-			}
-			//End is my prey dead?
-			
-			for(int b=0;b<cList.size();b++)
-			{
-				while(b<cList.size()&&!(cList.get(b).isbAlive()))
-				{
-					b++;
-				}
-				
-				//start "I want to eat you" and initiating pathing
-				if(a<cList.size()&&b<cList.size()&&a!=b&&cList.get(a).getiSightRange()>0&&cList.get(a).getiPredLevel()>cList.get(b).getiPredLevel()&&cList.get(a).iPreyNumber==-1)
-				{
-					if((cList.get(a).getXPosition()-cList.get(b).getXPosition())<(cList.get(a).getiSightRange())&&
-							(cList.get(a).getXPosition()-cList.get(b).getXPosition())>(-cList.get(a).getiSightRange())&&
-							(cList.get(a).getYPosition()-cList.get(b).getYPosition())<(cList.get(a).getiSightRange())&&
-									(cList.get(a).getYPosition()-cList.get(b).getYPosition())>(-cList.get(a).getiSightRange()))
-					{
-						cList.get(a).setiPreyNumber(b);
-						cList.get(a).setiMoveBehavior(10);
-						//System.out.println(a+" says I see you "+b);
-						//System.out.println("a-> "+ cList.get(a).getXPosition() + " , "+cList.get(a).getYPosition()+" b-> "+cList.get(b).getXPosition()+ " , "+cList.get(b).getYPosition());
-					}
-				}
-				//end "I want to eat you" and initiating pathing
-				
-				//start "I eat you" vs. "you eat me"
-				if(a<cList.size()&&b<cList.size()&&a!=b)
-				{
-				if(((cList.get(a).getXPosition()-cList.get(b).getXPosition())<(cList.get(a).getiSize()+cList.get(b).getiSize())&&
-						(cList.get(a).getXPosition()-cList.get(b).getXPosition())>(-cList.get(a).getiSize()-cList.get(b).getiSize()))&&
-						((cList.get(a).getYPosition()-cList.get(b).getYPosition())<(cList.get(a).getiSize()+cList.get(b).getiSize())&&
-								(cList.get(a).getYPosition()-cList.get(b).getYPosition())>(-cList.get(a).getiSize()-cList.get(b).getiSize())))
-				{
-					cList.get(a).assessInteraction(cList.get(b));
-					//System.out.println("a-> "+ cList.get(a).getXPosition() + " , "+cList.get(a).getYPosition()+" b-> "+cList.get(b).getXPosition()+ " , "+cList.get(b).getYPosition());
-				}
-				}
-				//end "I eat you" vs. "you eat me"
-				
-				
-				
-			}
+			tTileArray[x][y].bTL=true;
+			stTL.tTileArray[99][0].bBR=true;
+		}		
+		
+		//Top
+		if(y<99&&tTileArray[x][y+1]!=null)
+		{
+		tTileArray[x][y].tT=tTileArray[x][y+1];
+		tTileArray[x][y+1].tB=tTileArray[x][y];
+		
+		tTileArray[x][y].bT=true;
+		tTileArray[x][y+1].bB=true;
 		}
-	}
+		if(y==99&&stT!=null&&stT.tTileArray[x][0]!=null)
+		{
+			tTileArray[x][y].tT=stT.tTileArray[x][0];
+			stT.tTileArray[x][0].tB=tTileArray[x][y];
+			
+			tTileArray[x][y].bT=true;
+			stT.tTileArray[x][0].bB=true;
+		}
+		
+		//Top Right
+		if(x<99&&y<99&&tTileArray[x+1][y+1]!=null)
+		{
+		tTileArray[x][y].tTR=tTileArray[x+1][y+1];
+		tTileArray[x+1][y+1].tBL=tTileArray[x][y];
+		
+		tTileArray[x][y].bTR=true;
+		tTileArray[x+1][y+1].bBL=true;
+		}
+		if(x==99&&y<99&&stR!=null&&stR.tTileArray[0][y+1]!=null)
+		{
+			tTileArray[x][y].tTR=stR.tTileArray[0][y+1];
+			stR.tTileArray[0][y+1].tBL=tTileArray[x][y];
+			
+			tTileArray[x][y].bTR=true;
+			stR.tTileArray[0][y+1].bBL=true;
+		}
+		if(x<99&&y==99&&stT!=null&&stT.tTileArray[x+1][0]!=null)
+		{
+			tTileArray[x][y].tTR=stT.tTileArray[x+1][0];
+			stT.tTileArray[x+1][0].tBL=tTileArray[x][y];
+			
+			tTileArray[x][y].bTR=true;
+			stT.tTileArray[x+1][0].bBL=true;
+		}
+		if(x==99&&y==99&&stTR!=null&&stTR.tTileArray[0][0]!=null)
+		{
+			tTileArray[x][y].tTR=stTR.tTileArray[0][0];
+			stTR.tTileArray[0][0].tBL=tTileArray[x][y];
+			
+			tTileArray[x][y].bTR=true;
+			stTR.tTileArray[0][0].bBL=true;
+		}
+		//Right
+		if(x<99&&tTileArray[x+1][y]!=null)
+		{
+		tTileArray[x][y].tR=tTileArray[x+1][y];
+		tTileArray[x+1][y].tL=tTileArray[x][y];
+		
+		tTileArray[x][y].bR=true;
+		tTileArray[x+1][y].bL=true;
+		}
+		if(x==99&&stR!=null&&stR.tTileArray[0][y]!=null)
+		{
+			tTileArray[x][y].tR=stR.tTileArray[0][y];
+			stR.tTileArray[0][y].tL=tTileArray[x][y];
+			
+			tTileArray[x][y].bR=true;
+			stR.tTileArray[0][y].bL=true;
+			
+		}
+		//Bottom Right
+		if(x<99&&y>0&&tTileArray[x+1][y-1]!=null)
+		{
+		tTileArray[x][y].tBR=tTileArray[x+1][y-1];
+		tTileArray[x+1][y-1].tTL=tTileArray[x][y];
 
-	public void genSuperTile()
-	{
-		iZones=rand.nextInt(8)+1;
-		int[] iZoneArray= new int[iZones];
-		int iWidth=0;
-		int iHeight=0;
-		int iiX=0;
-		int iiY=0;
-		int iBG=rand.nextInt(3); //sets fill tile type
-		System.out.println("The background tileset is #"+iBG);
-		
-		for(int a=0;a<iZones;a++)
-		{
-			iZoneArray[a]=rand.nextInt(2); //0-> Field 1->Vein
+		tTileArray[x][y].bBR=true;
+		tTileArray[x+1][y-1].bTL=true;
 		}
-		
-		for(int e=0;e<100;e++)
+		if(x==99&&y>0&&stR!=null&&stR.tTileArray[0][y-1]!=null)
 		{
-			for(int f=0;f<100;f++)
-			{
-				
-					sTile[e][f].setType(iBG);
-					//System.out.println("The background tileset is now #"+iBuffer2);
-			}
-		}
-		
-		for(int b=0;b<iZones;b++)
-		{
-			if(iZoneArray[b]==0)
-			{
-				
-				iBuffer=rand.nextInt(3);
-				iWidth=rand.nextInt(10)+10;
-				iHeight=rand.nextInt(10)+10;
-				iiX=rand.nextInt(100);
-				iiY=rand.nextInt(100);
-				
-				if((iiX+iWidth)>99)
-				{
-					iiX=99-iWidth;
-				}
-				if((iiY+iHeight)>99)
-				{
-					iiY=99-iHeight;
-				}
-				
-				if(iBuffer!=iBG)
-				{
-					for(int c=iiX;c<(iiX+iWidth);c++)
-					{
-						for(int d=iiY;d<(iiY+iHeight);d++)
-						{
-								sTile[c][d].setType(iBuffer);
-								
-						}
-					}
-				
-					System.out.println("A field has been drawn that is type "+iBuffer+ " Against a "+iBG+" background");
-					System.out.println("at " +iiX +" , "+ iiY + "and size: "+iWidth+" by "+iHeight);
-				}
-				
-				
-				
-			}
-		}
-		
-		/*for(int b=0;b<iZones;b++)
-		{
-			if(iZoneArray[b]==1)
-			{
-				iWidth=rand.nextInt(5)+5;
-				iHeight=rand.nextInt(5)+5;
-				iX=rand.nextInt(100-iWidth);
-				iY=rand.nextInt(100-iHeight);
-			}
+			tTileArray[x][y].tBR=stR.tTileArray[0][y-1];
+			stR.tTileArray[0][y-1].tTL=tTileArray[x][y];
 			
-		}*/
+			tTileArray[x][y].bBR=true;
+			stR.tTileArray[0][y-1].bTL=true;
+		}
+		if(x<99&&y==0&&stB!=null&&stB.tTileArray[x+1][99]!=null)
+		{
+			tTileArray[x][y].tBR=stB.tTileArray[x+1][99];
+			stB.tTileArray[x+1][99].tTL=tTileArray[x][y];
+			
+			tTileArray[x][y].bBR=true;
+			stB.tTileArray[x+1][99].bTL=true;
+		}
+		if(x==99&&y==0&&stBR!=null&&stBR.tTileArray[0][99]!=null)
+		{
+			tTileArray[x][y].tBR=stBR.tTileArray[0][99];
+			stBR.tTileArray[0][99].tTL=tTileArray[x][y];
+			
+			tTileArray[x][y].bBR=true;
+			stBR.tTileArray[0][99].bTL=true;
+		}
+		//Bottom
+		if(y>0&&tTileArray[x][y-1]!=null)
+		{
+		tTileArray[x][y].tB=tTileArray[x][y-1];
+		tTileArray[x][y-1].tT=tTileArray[x][y];
 		
+		tTileArray[x][y].bB=true;
+		tTileArray[x][y-1].bT=true;
+		}
+		if(y==0&&stB!=null&&stB.tTileArray[x][99]!=null)
+		{
+			tTileArray[x][y].tB=stB.tTileArray[x][99];
+			stB.tTileArray[x][99].tT=tTileArray[x][y];
+			
+			tTileArray[x][y].bB=true;
+			stB.tTileArray[x][99].bT=true;
+		}
+		//Bottom Left
+		if(x>0&&y>0&&tTileArray[x-1][y-1]!=null)
+		{
+		tTileArray[x][y].tBL=tTileArray[x-1][y-1];
+		tTileArray[x-1][y-1].tTR=tTileArray[x][y];
 		
-		
-		
-		
-		
+		tTileArray[x][y].bBL=true;
+		tTileArray[x-1][y-1].bTR=true;
+		}
+		if(x==0&&y>0&&stL!=null&&stL.tTileArray[99][y-1]!=null)
+		{
+			tTileArray[x][y].tBL=stL.tTileArray[99][y-1];
+			stL.tTileArray[99][y-1].tTR=tTileArray[x][y];
+			
+			tTileArray[x][y].bBL=true;
+			stL.tTileArray[99][y-1].bTR=true;
+		}
+		if(x>0&&y==0&&stB!=null&&stB.tTileArray[x-1][99]!=null)
+		{
+			tTileArray[x][y].tBL=stB.tTileArray[x-1][99];
+			stB.tTileArray[x-1][99].tTR=tTileArray[x][y];
+			
+			tTileArray[x][y].bBL=true;
+			stB.tTileArray[x-1][99].bTR=true;
+		}
+		if(x==0&&y==0&&stBL!=null&&stBL.tTileArray[99][99]!=null)
+		{
+			tTileArray[x][y].tBL=stBL.tTileArray[99][99];
+			stBL.tTileArray[99][99].tTR=tTileArray[x][y];
+			
+			tTileArray[x][y].bBL=true;
+			stBL.tTileArray[99][99].bTR=true;
+		}
+	}
+	
+	public void printPatch()//Prints SuperTiles this SuperTile is patched to
+	{
+		System.out.println(stTL.iX+" , "+stTL.iY+" || "+stT.iX+" , "+stT.iY+" || "+stTR.iX+" , "+stTR.iY);
+		System.out.println(stL.iX+" , "+stL.iY+" || "+iX+" , "+iY+" || "+stR.iX+" , "+stR.iY);
+		System.out.println(stBL.iX+" , "+stBL.iY+" || "+stB.iX+" , "+stB.iY+" || "+stBR.iX+" , "+stBR.iY);
 	}
 }
