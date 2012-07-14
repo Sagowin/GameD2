@@ -9,6 +9,7 @@ public class Character {
 	int iYTile=0;
 	int posinTileX=25;
 	int posinTileY=25;
+	int iSpeed =10;
 	
 	
 	
@@ -20,6 +21,27 @@ public class Character {
 						
 	}
 	
+	
+	public void clickMove(int x, int y)
+	{
+		if(iPosX>x)
+		{
+			iPosX-=iSpeed;
+		}
+		if(iPosX<x)
+		{
+			iPosX+=iSpeed;
+		}
+		if(iPosY>y)
+		{
+			iPosY-=iSpeed;
+		}
+		if(iPosY<y)
+		{
+			iPosY+=iSpeed;
+		}
+		
+	}
 	
 	public void correctCharacter(int fX, int fY, int xAd, int yAd)
 	{

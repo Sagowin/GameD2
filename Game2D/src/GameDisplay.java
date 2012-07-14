@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -31,6 +32,10 @@ public class GameDisplay extends JFrame {
 	int iDrawBufferX=0;
 	int iDrawBufferY=0;
 	int iSpeedBuffer=0;
+
+	Color cBuffer= new Color(0,0,0);
+
+
 	
 	
 	BufferedImage tile = null;								//Image Buffer
@@ -116,6 +121,7 @@ public class GameDisplay extends JFrame {
 		mapDisplayImg = mapDisplay.createImage(iFramePixelsX, iFramePixelsY);
 		
 		addKeyListener(input);
+		addMouseListener(input);
 		
 		mapDisplay.addKeyListener(input);
 		mapDisplay.addMouseListener(input);
@@ -139,7 +145,23 @@ public class GameDisplay extends JFrame {
 	
 	public void display(){
 		drawSidebar(sidebar.getGraphics());
+
 		drawMatrix2();
+
+		
+		
+		switch(game.iSwitch)
+		{
+			case 0:
+				startMenu();
+				break;
+			case 1:
+				drawMatrix2();
+				break;
+		}
+		
+		
+
 		mapDisplay.getGraphics().drawImage(mapDisplayImg, 0, 0, null);
 	}
 	
@@ -156,55 +178,109 @@ public class GameDisplay extends JFrame {
 		g.dispose();
 		getBufferStrategy().show();
 	}
+	
+
+	
+	
+	public void startMenu()
+	{
+		Graphics g = getBufferStrategy().getDrawGraphics();
+		
+		g.setColor(Color.BLACK);
+		g.fillRect(0,0,1300,750);
+		
+		g.setFont(new Font("New Courier",Font.BOLD,20));
+		g.setColor(new Color(25,150,75));
+		sBuffer= "Start Menu ";
+		g.drawString(sBuffer, 500,150);
+		g.dispose();
+		getBufferStrategy().show();
+	}
 
 	
 	public void drawMatrix2()
 	{
 		Graphics g = getBufferStrategy().getDrawGraphics();
+		g.setFont(new Font("New Courier",Font.BOLD,15));
 		Character hero = game.hero;
 		
 				
-		iDrawBufferX=game.iArrayPositionX;
-		iDrawBufferY=game.iArrayPositionY;
+		//iDrawBufferX=game.iArrayPositionX;
+		//iDrawBufferY=game.iArrayPositionY;
+
 		
 		for(int a=0;a<22;a++)
 		{
 			for(int b=0;b<17;b++)
 			{
 				
+				
+				
 				g.drawImage(tile,	(a-1)*50-game.xEdgeAdjust,
 									(b-1)*50-game.yEdgeAdjust,
-									(a-1)*50-game.xEdgeAdjust+50,
-									(b-1)*50-game.yEdgeAdjust+50,
-									game.tArrayFrame[iDrawBufferX][iDrawBufferY].iPixelX, 
-									game.tArrayFrame[iDrawBufferX][iDrawBufferY].iPixelY,
-									game.tArrayFrame[iDrawBufferX][iDrawBufferY].iPixelX+49, 
-									game.tArrayFrame[iDrawBufferX][iDrawBufferY].iPixelY+49, null);
-				if(iDrawBufferY==16)
-				{
-					iDrawBufferY=0;
-				}else
-				{
-					iDrawBufferY++;
-				}
+									a*50-game.xEdgeAdjust,
+									b*50-game.yEdgeAdjust,
+									game.tArrayFrame[a][16-b].iPixelX, 
+									game.tArrayFrame[a][16-b].iPixelY,
+									game.tArrayFrame[a][16-b].iPixelX+49, 
+									game.tArrayFrame[a][16-b].iPixelY+49, null);
+				
+				sBuffer=game.tArrayFrame[a][16-b].iX+" , "+game.tArrayFrame[a][16-b].iY;
+				g.drawString(sBuffer, (a-1)*50-game.xEdgeAdjust,(b-1)*50-game.yEdgeAdjust+25);
+				
 			}
 			
-			if(iDrawBufferX==21)
-			{
-				iDrawBufferX=0;
-			}else
-			{
-				iDrawBufferX++;
-			}
+			
 		}
 		
+						
+		g.drawImage(tile, game.hero.iScreenX,game.hero.iScreenY , game.hero.iScreenX+50, game.hero.iScreenY+50, 0,100,49,149,null);
+		
+		//Draw Creatures
+		for(int c=0;c<game.gameMap.cAL.size();c++)
+		{
+				if(		game.gameMap.cAL.get(c).bAlive&&
+						500+game.gameMap.cAL.get(c).iPosX-50*game.FrameX>0&&
+						500+game.gameMap.cAL.get(c).iPosX-50*game.FrameX<1050&&
+						500-game.gameMap.cAL.get(c).iPosY+50*game.FrameY>0&&
+						500-game.gameMap.cAL.get(c).iPosY+50*game.FrameY<800
+						)
+				{
+					g.drawImage(tile, 	500+game.gameMap.cAL.get(c).iPosX-50*game.FrameX-game.xEdgeAdjust,
+										500-game.gameMap.cAL.get(c).iPosY+50*game.FrameY-game.yEdgeAdjust,
+										550+game.gameMap.cAL.get(c).iPosX-50*game.FrameX-game.xEdgeAdjust,
+										550-game.gameMap.cAL.get(c).iPosY+50*game.FrameY-game.yEdgeAdjust,
+										game.gameMap.cAL.get(c).iPixelX,
+										game.gameMap.cAL.get(c).iPixelY,
+										game.gameMap.cAL.get(c).iPixelX+49,
+										game.gameMap.cAL.get(c).iPixelY+49,null);
+				}
+			
+			
+
+		}
+		//End Draw Creatures
+		
+		g.clearRect(1000, 0, 300, 750);
+		
+
 						
 		g.drawImage(tile, game.hero.iScreenX,game.hero.iScreenY , game.hero.iScreenX+50, game.hero.iScreenY+50, 0,100,49,149,null);
 		
 		
 		
 		g.clearRect(1000, 0, 300, 750);
+
+		sBuffer="Position: "+game.hero.iXTile+" , "+game.hero.iYTile;
+		g.drawString(sBuffer, 1100,100);
+		sBuffer="Frame: "+game.FrameX+" , "+game.FrameY;
+		g.drawString(sBuffer, 1100,200);
+		sBuffer="ArrayAdjust: "+game.iArrayPositionX+" , "+game.iArrayPositionY;
+		g.drawString(sBuffer, 1100,300);
 		
+		
+			
+
 		//playerPos.setText("("+hero.iXTile+" , "+hero.iYTile+")");
 		
 

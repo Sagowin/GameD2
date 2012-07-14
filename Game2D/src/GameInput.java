@@ -8,13 +8,15 @@ public class GameInput implements KeyListener, MouseListener{
 
 	GameMain game;
 	
+	int iBuffer=0;
+	
 	public GameInput(GameMain g){
 		game = g;
 	}
 	
 	public void edgeDetect()
 	{
-		if(game.hero.iScreenX<150)
+		if(game.hero.iScreenX<250)
 		{
 			game.lEdge=true;
 		}else
@@ -22,21 +24,21 @@ public class GameInput implements KeyListener, MouseListener{
 			game.lEdge=false;
 		}
 		
-		if(game.hero.iScreenX>850)
+		if(game.hero.iScreenX>750)
 		{
 			game.rEdge=true;
 		}else
 		{
 			game.rEdge=false;
 		}
-		if(game.hero.iScreenY<150)
+		if(game.hero.iScreenY<250)
 		{
 			game.tEdge=true;
 		}else
 		{
 			game.tEdge=false;
 		}
-		if(game.hero.iScreenY>600)
+		if(game.hero.iScreenY>500)
 		{
 			game.bEdge=true;
 		}else
@@ -55,158 +57,104 @@ public class GameInput implements KeyListener, MouseListener{
 			
 			game.xEdgeAdjust-=50;	//Re-adjusts Draw Function for Frame Shift
 			game.FrameX++;			//Shifts From to the Right
-			
-					
-			if(game.iArrayPositionX==21) 	//21 is the maximum position in tFrameArray to moves to the right
-			{								//[*note this ends up being a little counter intuitive*]
-				game.iArrayPositionX=0;
-			}else
-			{
-				game.iArrayPositionX++;
-			}
-			game.extendMap();
-			shiftRight();		//Loads the new right most column at iArrayPositionX-1 replacing the "far left" column
+			redrawFrame();
 		}
 		
 		if(game.xEdgeAdjust<-50)
 		{
 			game.xEdgeAdjust+=50;		//Re-adjusts Draw Function for Frame Shift
 			game.FrameX--;				//Shifts From to the Left
-			
-						
-			if(game.iArrayPositionX==0) 	//Moves the opposite of it's right adjust counterpart ^above^
-			{
-				game.iArrayPositionX=21;
-			}else
-			{
-				game.iArrayPositionX--;
-			}
-			game.extendMap();
-			shiftLeft();			//Loads the new left most column at iArrayPositionX replacing the "far right" column
-			
-			
+			redrawFrame();
 		}
 		
 		if(game.yEdgeAdjust>50)
 		{
 			game.yEdgeAdjust-=50;		//Re-adjusts Draw Function for Frame Shift
-			game.FrameY--;			//Shifts Frame Down
-			
+			game.FrameY--;				//Shifts Frame Down
+			redrawFrame();
 					
-			if(game.iArrayPositionY==16)
-			{
-				game.iArrayPositionY=0;
-			}else
-			{
-				game.iArrayPositionY++;
-			}
-			game.extendMap();
-			shiftDown();		//Loads the new bottom most column at iArrayPositionY-1 replacing the "far top" column
-			
 		}
 		
 		if(game.yEdgeAdjust<-50)
 		{
 			
-			
 			game.yEdgeAdjust+=50;	//Re-adjusts Draw Function for Frame Shift
 			game.FrameY++;			//Shifts Frame down
 			
-						
-			if(game.iArrayPositionY==0)
-			{
-				game.iArrayPositionY=16;
-			}else
-			{
-				game.iArrayPositionY--;
-			}
-			game.extendMap();
-			shiftUp();				//Loads the new top most column at iArrayPositionY replacing the "far bottom" column
+
+			game.yEdgeAdjust+=50;	//Re-adjusts Draw Function for Frame Shift
+			game.FrameY++;			//Shifts Frame down
+			redrawFrame();
 		}
 		
 		
 	}
-	
-	//Reworked and Working
-	public void shiftDown()
+			
+	//Redraws Frame (brute-force method) Currently in Use to load the Frame that is drawn when the screen moves a tile
+	public void redrawFrame()
 	{
-		for(int a=0;a<21;a++)
+		for(int a=0;a<game.tArrayFrame.length;a++)
 		{
-			if(game.iArrayPositionY>1)
+			for(int b=0;b<game.tArrayFrame[0].length;b++)
 			{
-				game.tArrayFrame[a][game.iArrayPositionY-1]=game.tArrayFrame[a][game.iArrayPositionY-2].tB;
-				
-			}else if(game.iArrayPositionY==1)
-			{
-				game.tArrayFrame[a][game.iArrayPositionY-1]=game.tArrayFrame[a][16].tB;
-				
-			}else if (game.iArrayPositionY==0)
-			{
-				game.tArrayFrame[a][16]=game.tArrayFrame[a][15].tB;
-			}
-		}	
-	}
-	
-	//Reworked and Working
-	public void shiftUp()
-	{
-		for(int a=0;a<21;a++)
-		{
-			if(game.iArrayPositionY<16)
-			{
-				game.tArrayFrame[a][game.iArrayPositionY]=game.tArrayFrame[a][game.iArrayPositionY+1].tT;
-			}else
-			{
-				game.tArrayFrame[a][game.iArrayPositionY]=game.tArrayFrame[a][0].tT;
+				game.tArrayFrame[a][b]=game.gameMap.getTile((a-11+game.FrameX) , (b-5+game.FrameY));
+
 			}
 		}
 	}
 	
-	//Reworked and Working
-	public void shiftLeft()
+	public void clickMove(int x, int y)
 	{
-		for(int a=0;a<17;a++)
+		if(game.hero.iPosX>x)
 		{
-			if(game.iArrayPositionX<21)
+			game.hero.iPosX-=game.iSpeed;
+			if(game.lEdge)
 			{
-				game.tArrayFrame[game.iArrayPositionX][a]=game.tArrayFrame[game.iArrayPositionX+1][a].tL;
-			}else
+				game.xEdgeAdjust-=game.iSpeed;
+			}
+		}
+		if(game.hero.iPosX<x)
+		{
+			game.hero.iPosX+=game.iSpeed;
+			if(game.rEdge)
 			{
-				game.tArrayFrame[game.iArrayPositionX][a]=game.tArrayFrame[0][a].tL;
+				game.xEdgeAdjust+=game.iSpeed;
+			}
+		}
+		if(game.hero.iPosY>y)
+		{
+			game.hero.iPosY-=game.iSpeed;
+			
+			if(game.bEdge)
+			{
+				game.yEdgeAdjust+=game.iSpeed;
+								
+			}
+		}
+		if(game.hero.iPosY<y)
+		{
+			game.hero.iPosY+=game.iSpeed;
+			
+			if(game.tEdge)
+			{
+				game.yEdgeAdjust-=game.iSpeed;
+							
 			}
 		}
 		
-	}
-	
-	//Redone Worked and Working
-	public void shiftRight()
-	{
-		for(int a=0;a<17;a++)
-		{
-			if(game.iArrayPositionX>1)
-			{
-				game.tArrayFrame[game.iArrayPositionX-1][a]=game.tArrayFrame[game.iArrayPositionX-2][a].tR;
-			}else if(game.iArrayPositionX==1)
-			{
-				game.tArrayFrame[game.iArrayPositionX-1][a]=game.tArrayFrame[21][a].tR;
-				
-			}else if(game.iArrayPositionX==0)
-			{
-				game.tArrayFrame[21][a]=game.tArrayFrame[20][a].tR;
-			}
-		}
+		game.hero.correctCharacter(game.FrameX,game.FrameY,game.xEdgeAdjust,game.yEdgeAdjust);
+		
 	}
 	
 	
-	
+	@Override
 	public void keyPressed(KeyEvent k) {
 		
-		//game.extendMap();
-		
+
 		switch(k.getKeyCode())
 		{
 		case KeyEvent.VK_LEFT:
-					
+			game.bClickMove=false;
 			game.hero.iPosX-=game.iSpeed;
 			
 			if(game.lEdge)
@@ -216,12 +164,16 @@ public class GameInput implements KeyListener, MouseListener{
 				
 			}
 			game.hero.correctCharacter(game.FrameX, game.FrameY, game.xEdgeAdjust,game.yEdgeAdjust);
+
 			correctEdgeAdjust();
+			
+
 			edgeDetect();
 			
 			break;
 			
 		case KeyEvent.VK_RIGHT:
+			game.bClickMove=false;
 			game.hero.iPosX+=game.iSpeed;
 			if(game.rEdge)
 			{
@@ -237,7 +189,7 @@ public class GameInput implements KeyListener, MouseListener{
 			break;
 				
 		case KeyEvent.VK_UP:
-			
+			game.bClickMove=false;
 			game.hero.iPosY+=game.iSpeed;
 			
 			if(game.tEdge)
@@ -255,6 +207,7 @@ public class GameInput implements KeyListener, MouseListener{
 			break;
 			
 		case KeyEvent.VK_DOWN:
+			game.bClickMove=false;
 			game.hero.iPosY-=game.iSpeed;
 			
 			if(game.bEdge)
@@ -266,32 +219,47 @@ public class GameInput implements KeyListener, MouseListener{
 			game.hero.correctCharacter(game.FrameX, game.FrameY, game.xEdgeAdjust,game.yEdgeAdjust);
 			correctEdgeAdjust();
 			edgeDetect();
-			
 			break;
 		}
 				
 	}
+	
 	@Override
 	public void keyReleased(KeyEvent arg0) {
+
 	}
 	@Override
 	public void keyTyped(KeyEvent arg0) {
 			
 	}
 	@Override
-	public void mouseClicked(MouseEvent k) {
+	public void mouseClicked(MouseEvent m) {
 		
-		//k.getX();
-		//k.getY();
+		
+		
+		/*if(m.getButton()==MouseEvent.BUTTON1)
+		{
+			game.iClickX=m.getX()-500+50*game.FrameX+game.xEdgeAdjust;
+			game.iClickY=500+50*game.FrameY-game.yEdgeAdjust-m.getY();
+			game.bClickMove=true;
+		}*/
+	
 		
 		/*if(k.getButton()==MouseEvent.BUTTON3) //BUTTON1 = Left and BUTTON3 = Right
 		{
 			System.out.println("One");
 		}*/
 		
-		System.out.println("Got mouse click " + k);		
+	//	System.out.println("Got mouse click " + m);		
+	
 	}
+
+
+
+	
+	
 	@Override
+
 	public void mouseEntered(MouseEvent arg0) {
 		
 		
@@ -302,8 +270,21 @@ public class GameInput implements KeyListener, MouseListener{
 		
 	}
 	@Override
-	public void mousePressed(MouseEvent arg0) {
-
+	public void mousePressed(MouseEvent k) {
+		
+		if(k.getButton()==MouseEvent.BUTTON1)
+		{
+			game.iClickX=k.getX()-500+50*game.FrameX+game.xEdgeAdjust;
+			game.iClickY=500+50*game.FrameY-game.yEdgeAdjust-k.getY();
+			game.bClickMove=true;
+		}
+		
+		/*if(k.getButton()==MouseEvent.BUTTON3) //BUTTON1 = Left and BUTTON3 = Right
+		{
+			System.out.println("One");
+		}*/
+		
+		//System.out.println("Got mouse click " + k);
 		
 	}
 	@Override

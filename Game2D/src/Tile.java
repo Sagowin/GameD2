@@ -7,6 +7,10 @@ public class Tile {
 	int iY=0;
 	int iPixelX=0;
 	int iPixelY=0;
+
+	int iXST=-1;
+	int iYST=-1;
+
 	
 	final int FOREST=0;
 	final int GRASS=1;
@@ -14,6 +18,12 @@ public class Tile {
 	final int DESERT=3;
 	final int ICE=4;
 	
+
+	Biome biome;
+	
+	SuperTile sIdentity;
+	
+
 	Tile tL;
 	Tile tR;
 	Tile tT;
@@ -52,14 +62,36 @@ public class Tile {
 	}
 	
 		
+
 	public Tile(int x, int y, int t)
 	{
 		iX=x;
 		iY=y;
+
+	}
+	
+	public Tile(int x, int y, int t, Biome b)
+	{
+		iX=x;
+		iY=y;
+		biome =b;
+
 		bEmpty=false;
 		setType(t);
 	}
 	
+
+	//Will Eventually Be Obsolete
+	public Tile(int x, int y, int t, SuperTile ST)
+	{
+		iX=x;
+		iY=y;
+		bEmpty=false;
+		sIdentity=ST;
+		setType(t);
+	}
+	
+
 	
 	public void setType(int t)
 	{
@@ -67,7 +99,7 @@ public class Tile {
 		switch(type)
 		{
 		case GRASS:
-		
+		iPixelX=0;
 		break;
 		case FOREST: //grass
 		iPixelX=50;

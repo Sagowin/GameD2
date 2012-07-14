@@ -12,6 +12,11 @@ public class SuperTile {
 	int iYBuffer=0;									//Buffers Position of new Tile
 	Random rand = new Random();
 	
+
+	boolean bFull=false;
+	int iEmpty=10000;
+	
+
 	SuperTile stL;
 	SuperTile stR;
 	SuperTile stT;
@@ -21,6 +26,7 @@ public class SuperTile {
 	SuperTile stBL;
 	SuperTile stBR;
 	boolean bPatched=false;
+
 	
 	public SuperTile()
 	{
@@ -36,14 +42,21 @@ public class SuperTile {
 		
 		System.out.println("SuperTile created at "+iX+" , "+iY);
 		
-		//Initialize Array
+		//Initialize Array with Empty Tiles
+
 		for(int a=0;a<100;a++)
 		{
 			for(int b=0;b<100;b++)
 			{
-				tTileArray[a][b]= new Tile();
+				tTileArray[a][b]= new EmptyTile(a,b);
+				patchnewTile(a,b);
 			}
 		}
+	
+		
+		
+		generateTile();
+
 	}
 	
 	public void addTile(int x, int y)
@@ -60,6 +73,7 @@ public class SuperTile {
 			y=100+y;
 		}
 		
+
 		tTileArray[x][y]= new Tile(iXBuffer,iYBuffer,rand.nextInt(3));
 		patchnewTile(x,y);
 	}
@@ -198,95 +212,121 @@ public class SuperTile {
 		{
 			tTileArray[x][y].tR=stR.tTileArray[0][y];
 			stR.tTileArray[0][y].tL=tTileArray[x][y];
-			
-			tTileArray[x][y].bR=true;
-			stR.tTileArray[0][y].bL=true;
-			
 		}
-		//Bottom Right
-		if(x<99&&y>0&&tTileArray[x+1][y-1]!=null)
-		{
-		tTileArray[x][y].tBR=tTileArray[x+1][y-1];
-		tTileArray[x+1][y-1].tTL=tTileArray[x][y];
+		
+				//Bottom Right
+			if(x<99&&y>0&&tTileArray[x+1][y-1]!=null)
+			{
+			tTileArray[x][y].tBR=tTileArray[x+1][y-1];
+			tTileArray[x+1][y-1].tTL=tTileArray[x][y];
+	
+			tTileArray[x][y].bBR=true;
+			tTileArray[x+1][y-1].bTL=true;
+			}
+			if(x==99&&y>0&&stR!=null&&stR.tTileArray[0][y-1]!=null)
+			{
+				tTileArray[x][y].tBR=stR.tTileArray[0][y-1];
+				stR.tTileArray[0][y-1].tTL=tTileArray[x][y];
+				
+				tTileArray[x][y].bBR=true;
+				stR.tTileArray[0][y-1].bTL=true;
+			}
+			if(x<99&&y==0&&stB!=null&&stB.tTileArray[x+1][99]!=null)
+			{
+				tTileArray[x][y].tBR=stB.tTileArray[x+1][99];
+				stB.tTileArray[x+1][99].tTL=tTileArray[x][y];
+					
+				tTileArray[x][y].bBR=true;
+				stB.tTileArray[x+1][99].bTL=true;
+		 	}
+			if(x==99&&y==0&&stBR!=null&&stBR.tTileArray[0][99]!=null)
+			{
+				tTileArray[x][y].tBR=stBR.tTileArray[0][99];
+				stBR.tTileArray[0][99].tTL=tTileArray[x][y];
+					
+				tTileArray[x][y].bBR=true;
+				stBR.tTileArray[0][99].bTL=true;
+			}
 
-		tTileArray[x][y].bBR=true;
-		tTileArray[x+1][y-1].bTL=true;
-		}
-		if(x==99&&y>0&&stR!=null&&stR.tTileArray[0][y-1]!=null)
-		{
-			tTileArray[x][y].tBR=stR.tTileArray[0][y-1];
-			stR.tTileArray[0][y-1].tTL=tTileArray[x][y];
-			
-			tTileArray[x][y].bBR=true;
-			stR.tTileArray[0][y-1].bTL=true;
-		}
-		if(x<99&&y==0&&stB!=null&&stB.tTileArray[x+1][99]!=null)
-		{
-			tTileArray[x][y].tBR=stB.tTileArray[x+1][99];
-			stB.tTileArray[x+1][99].tTL=tTileArray[x][y];
-			
-			tTileArray[x][y].bBR=true;
-			stB.tTileArray[x+1][99].bTL=true;
-		}
-		if(x==99&&y==0&&stBR!=null&&stBR.tTileArray[0][99]!=null)
-		{
-			tTileArray[x][y].tBR=stBR.tTileArray[0][99];
-			stBR.tTileArray[0][99].tTL=tTileArray[x][y];
-			
-			tTileArray[x][y].bBR=true;
-			stBR.tTileArray[0][99].bTL=true;
-		}
 		//Bottom
-		if(y>0&&tTileArray[x][y-1]!=null)
-		{
-		tTileArray[x][y].tB=tTileArray[x][y-1];
-		tTileArray[x][y-1].tT=tTileArray[x][y];
+					if(y>0&&tTileArray[x][y-1]!=null)
+						{
+						tTileArray[x][y].tB=tTileArray[x][y-1];
+						tTileArray[x][y-1].tT=tTileArray[x][y];
+						
+						tTileArray[x][y].bB=true;
+						tTileArray[x][y-1].bT=true;
+						}
+						if(y==0&&stB!=null&&stB.tTileArray[x][99]!=null)
+						{
+							tTileArray[x][y].tB=stB.tTileArray[x][99];
+							stB.tTileArray[x][99].tT=tTileArray[x][y];
+				 			
+							tTileArray[x][y].bB=true;
+							stB.tTileArray[x][99].bT=true;
+						}
+						
+						
+
 		
-		tTileArray[x][y].bB=true;
-		tTileArray[x][y-1].bT=true;
-		}
-		if(y==0&&stB!=null&&stB.tTileArray[x][99]!=null)
-		{
-			tTileArray[x][y].tB=stB.tTileArray[x][99];
-			stB.tTileArray[x][99].tT=tTileArray[x][y];
-			
-			tTileArray[x][y].bB=true;
-			stB.tTileArray[x][99].bT=true;
-		}
 		//Bottom Left
-		if(x>0&&y>0&&tTileArray[x-1][y-1]!=null)
-		{
-		tTileArray[x][y].tBL=tTileArray[x-1][y-1];
-		tTileArray[x-1][y-1].tTR=tTileArray[x][y];
+			
+					if(x>0&&y>0&&tTileArray[x-1][y-1]!=null)
+						{
+						tTileArray[x][y].tBL=tTileArray[x-1][y-1];
+						tTileArray[x-1][y-1].tTR=tTileArray[x][y];
+				 		
+						tTileArray[x][y].bBL=true;
+						tTileArray[x-1][y-1].bTR=true;
+						}
+						if(x==0&&y>0&&stL!=null&&stL.tTileArray[99][y-1]!=null)
+						{
+							tTileArray[x][y].tBL=stL.tTileArray[99][y-1];
+							stL.tTileArray[99][y-1].tTR=tTileArray[x][y];
+							
+							tTileArray[x][y].bBL=true;
+							stL.tTileArray[99][y-1].bTR=true;
+						}
+						if(x>0&&y==0&&stB!=null&&stB.tTileArray[x-1][99]!=null)
+						{
+							tTileArray[x][y].tBL=stB.tTileArray[x-1][99];
+							stB.tTileArray[x-1][99].tTR=tTileArray[x][y];
+							
+							tTileArray[x][y].bBL=true;
+							stB.tTileArray[x-1][99].bTR=true;
+						}
+						if(x==0&&y==0&&stBL!=null&&stBL.tTileArray[99][99]!=null)
+						{
+							tTileArray[x][y].tBL=stBL.tTileArray[99][99];
+							stBL.tTileArray[99][99].tTR=tTileArray[x][y];
+							
+							tTileArray[x][y].bBL=true;
+							stBL.tTileArray[99][99].bTR=true;
+						}
+
 		
-		tTileArray[x][y].bBL=true;
-		tTileArray[x-1][y-1].bTR=true;
-		}
-		if(x==0&&y>0&&stL!=null&&stL.tTileArray[99][y-1]!=null)
+	}
+	
+	public void addTile(int x, int y, int t, Biome b)
+	{
+		tTileArray[x][y]= new Tile(x,y,t,b);
+		patchnewTile(x,y);
+	}
+	
+	
+	public void generateTile()
+	{
+		for(int a=0;a<100;a++)
 		{
-			tTileArray[x][y].tBL=stL.tTileArray[99][y-1];
-			stL.tTileArray[99][y-1].tTR=tTileArray[x][y];
-			
-			tTileArray[x][y].bBL=true;
-			stL.tTileArray[99][y-1].bTR=true;
-		}
-		if(x>0&&y==0&&stB!=null&&stB.tTileArray[x-1][99]!=null)
-		{
-			tTileArray[x][y].tBL=stB.tTileArray[x-1][99];
-			stB.tTileArray[x-1][99].tTR=tTileArray[x][y];
-			
-			tTileArray[x][y].bBL=true;
-			stB.tTileArray[x-1][99].bTR=true;
-		}
-		if(x==0&&y==0&&stBL!=null&&stBL.tTileArray[99][99]!=null)
-		{
-			tTileArray[x][y].tBL=stBL.tTileArray[99][99];
-			stBL.tTileArray[99][99].tTR=tTileArray[x][y];
-			
-			tTileArray[x][y].bBL=true;
-			stBL.tTileArray[99][99].bTR=true;
+			for(int b=0;b<100;b++)
+			{
+				tTileArray[a][b]= new Tile(a,b,rand.nextInt(3), this);
+				patchnewTile(a,b);
+			}
 		}
 	}
+	
+
 	
 	public void printPatch()//Prints SuperTiles this SuperTile is patched to
 	{

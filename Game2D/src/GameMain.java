@@ -20,15 +20,24 @@ import javax.swing.JFrame;
 
 public class GameMain extends JFrame implements KeyListener, MouseListener{
 
-	Character hero = new Character(500,500);				//Constructs the Central Character
+
+	
+
+	Character hero = new Character(0,0);				//Constructs the Central Character
+
 	int FrameX=0;											//Position of the Center Tile in Frame X (hopefully)
 	int FrameY=0;											//Position of the Center Tile in Frame Y (hopefully)
+	
 	static GameMain m = new GameMain(0,0);					//The Grand Pooba (<-fuck you this is a word)
 	
 	boolean rEdge=false;									//true--Close to Right Edge
 	boolean lEdge=false;									//true--Close to Left Edge
 	boolean tEdge=false;									//true--Close to Top Edge
 	boolean bEdge=false;									//true--Close to Bottom Edge
+	
+	boolean bClickMove=false;
+	int iClickX=0;
+	int iClickY=0;
 	
 	int xEdgeAdjust=0;										//Side Scrolling Modulator X
 	int yEdgeAdjust=0;										//Side Scrolling Modulator Y
@@ -38,7 +47,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	
 	int iArrayPositionX=0;
 	int iArrayPositionY=0;
-	
+
 	Map gameMap = new Map();
 	
 	Tile[][] tArrayFrame= new Tile[22][17];
@@ -46,18 +55,29 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	int iSpeed=10;											//"hero" run speed
 
 	int iBuffer=-1; 										//General Integer Buffer
-	int iBuffer2=-1;										//Secondary General Integer Buffe
+
+	int iBuffer2=-1;										//Secondary General Integer Buffer
+
 	boolean bBuffer=false;									//General Boolean Buffer
 	
 	Random rand = new Random();								//Generates Randomizing Object
 	
 	
-	int iSwitch=0;											//Controls the switchboard 0=draw matrix
+	
+
+
+	int iSwitch=1;											//Controls the switchboard 0=start menu 1=drawmatrix
+
 	
 	GameInput input;
 	GameDisplay display;
+
 	
 	int iTileCount=0;
+	
+	boolean bOrigin=false;
+	
+	
 	
 	
 	
@@ -73,7 +93,9 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	}
 	public static void clientInit(GameMain main)
 	{		
+
 		main.createOrigin();
+
 		while(true)
 		{
 				main.doEvent();
@@ -81,7 +103,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 				
 				
 			try {
-				Thread.sleep(40);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -89,30 +111,17 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		
 	}
 
-	
-	
-	
-	//This is a work in progress as well
-	
-	
-	
-	
+
+
 	
 	public void createOrigin()
 	{
 		
-		for(int x=-20;x<=20;x++)
-		{
-			for(int y=-20;y<=20;y++)
-			{
-				gameMap.addTile(x, y);
-				iTileCount++;
-				
-			}
-		}
+		//gameMap.makeOrigin();
 		
-		System.out.println(iTileCount);
 		
+			
+		//Blanks the Rendered Frame
 		for(int a=0;a<tArrayFrame.length;a++)
 		{
 			for(int b=0;b<tArrayFrame[0].length;b++)
@@ -121,11 +130,12 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 			}
 		}
 		
+		//Loads the Rendered Frame
 		for(int a=0;a<tArrayFrame.length;a++)
 		{
 			for(int b=0;b<tArrayFrame[0].length;b++)
 			{
-				tArrayFrame[a][b]=gameMap.getTile((a-10) , (b-10));
+				tArrayFrame[a][b]=gameMap.getTile((a-11) , (b-5));
 			}
 		}
 		
@@ -133,25 +143,29 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 		
 	}
 	
-	public void extendMap()
-	{
-		for(int a=-20;a<20;a++)
-		{
-			for(int b=-20;b<20;b++)
-			{
-				if(gameMap.getTile((FrameX+a),(FrameY+b)).bEmpty)
-						{
-							gameMap.addTile((FrameX+a),(FrameY+b));
-						}
-			}
-		}
-	}
-	
+
 	public void doEvent()
 	{
+		if(!bOrigin)
+		{
+			createOrigin();
+			bOrigin=true;
+		}
+		if(bClickMove)
+		{	
+			input.edgeDetect();
+			input.correctEdgeAdjust();
+			input.clickMove(iClickX, iClickY);
+			
+		}
+		
+		gameMap.generateCreatures();
+		gameMap.moveCreatures();
+		//gameMap.compareCreatures();
+		gameMap.seeCreatures();
 		
 	}
-	
+
 	
 	@Override
 	
@@ -166,7 +180,7 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 	}
 	@Override
 	public void keyReleased(KeyEvent k) {
-		switch(k.getKeyChar())
+		/*switch(k.getKeyChar())
 		{
 		case 'i':
 			if(iSwitch==1)
@@ -177,24 +191,13 @@ public class GameMain extends JFrame implements KeyListener, MouseListener{
 				iSwitch=1;
 			}
 			break;
-		}
+		}*/
 	}
 	@Override
 	public void keyTyped(KeyEvent arg0) {
 			
 	}
-	@Override
-	public void mouseClicked(MouseEvent k) {
-		
-		//k.getX();
-		//k.getY();
-		
-		/*if(k.getButton()==MouseEvent.BUTTON3) //BUTTON1 = Left and BUTTON3 = Right
-		{
-			System.out.println("One");
-		}*/
-		
-		
+	public void mouseClicked(MouseEvent k) {		
 		
 	}
 	@Override
